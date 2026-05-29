@@ -7,7 +7,7 @@ public class Producto
     public string? Descripcion{get; set;}
     public decimal PrecioVenta{get; set;}
     public decimal Costo {get; set;}
-    public int StockAnual {get; set;}
+    public int StockActual {get; set;}
     public int StockMinimo{get; set;}
     public DateTime? FechaVencimiento{get; set;}
     public bool Activo {get; set;} = true;
