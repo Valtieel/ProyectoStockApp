@@ -207,9 +207,6 @@ C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\ne
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\icudt_EFIGS.tptq2av103.dat
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\icudt_no_CJK.lfu7j35m59.dat
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\Microsoft.DotNet.HotReload.WebAssembly.Browser.1vk97ay1th.wasm
-C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\StockApp.Client.esh2y01j1g.wasm
-C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\StockApp.Client.8xu1vcn2ne.pdb
-C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\dotnet.p2r7f26b3v.js
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\blazor.webassembly.958z1vx7fr.js.gz
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\Microsoft.AspNetCore.Authorization.s5zxhf8cpw.wasm.gz
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\Microsoft.AspNetCore.Components.xp2g4rd365.wasm.gz
@@ -418,9 +415,6 @@ C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\ne
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\icudt_EFIGS.tptq2av103.dat.gz
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\icudt_no_CJK.lfu7j35m59.dat.gz
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\Microsoft.DotNet.HotReload.WebAssembly.Browser.1vk97ay1th.wasm.gz
-C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\StockApp.Client.esh2y01j1g.wasm.gz
-C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\StockApp.Client.8xu1vcn2ne.pdb.gz
-C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\dotnet.p2r7f26b3v.js.gz
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\StockApp.Client.staticwebassets.runtime.json
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\StockApp.Client.staticwebassets.endpoints.json
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\StockApp.Client.dll
@@ -1111,10 +1105,6 @@ C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\ne
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\compressed\3fq14keotq-{0}-tptq2av103-tptq2av103.gz
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\compressed\6piglj29l6-{0}-lfu7j35m59-lfu7j35m59.gz
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\compressed\hnaq6uhgy0-{0}-1vk97ay1th-1vk97ay1th.gz
-C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\compressed\frebak0l0d-{0}-esh2y01j1g-esh2y01j1g.gz
-C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\compressed\4otzj9s9g9-{0}-8xu1vcn2ne-8xu1vcn2ne.gz
-C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\compressed\elkf8xarnv-{0}-p2r7f26b3v-p2r7f26b3v.gz
-C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\compressed\evnls5fehz-{0}-6qfluwfqj4-6qfluwfqj4.gz
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\staticwebassets.build.json
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\staticwebassets.build.json.cache
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\staticwebassets.development.json
@@ -1125,3 +1115,14 @@ C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\ne
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\refint\StockApp.Client.dll
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\StockApp.Client.pdb
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\ref\StockApp.Client.dll
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\StockApp.Client.sourcelink.json
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\StockApp.Client.cgedj4cyfo.wasm
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\StockApp.Client.p4q2g10uxe.pdb
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\dotnet.p22fj75shv.js
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\StockApp.Client.cgedj4cyfo.wasm.gz
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\StockApp.Client.p4q2g10uxe.pdb.gz
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\bin\Debug\net10.0\wwwroot\_framework\dotnet.p22fj75shv.js.gz
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\compressed\frebak0l0d-{0}-cgedj4cyfo-cgedj4cyfo.gz
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\compressed\4otzj9s9g9-{0}-p4q2g10uxe-p4q2g10uxe.gz
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\compressed\elkf8xarnv-{0}-p22fj75shv-p22fj75shv.gz
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Client\obj\Debug\net10.0\compressed\evnls5fehz-{0}-zidemgjn62-zidemgjn62.gz

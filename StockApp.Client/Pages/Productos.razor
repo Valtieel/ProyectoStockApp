@@ -1,0 +1,60 @@
+@page "/productos"
+@inject HttpClient Http
+
+<h3>Productos</h3>
+
+@if (productos == null)
+{
+    <p>Cargando...</p>
+}
+else if (!productos.Any())
+{
+    <p>No hay productos cargados.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Precio</th>
+                <th>Costo</th>
+                <th>Stock</th>
+                <th>Stock Mínimo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in productos)
+            {
+                <tr class="@(p.StockActual <= p.StockMinimo ? "stock-bajo" : "")">
+                    <td>@p.Nombre</td>
+                    <td>$@p.PrecioVenta</td>
+                    <td>$@p.Costo</td>
+                    <td>@p.StockActual</td>
+                    <td>@p.StockMinimo</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<Producto>? productos;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await Http.GetFromJsonAsync<List<Producto>>("productos");
+    }
+
+    // Clase que representa el producto que viene de la API
+    public class Producto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public decimal PrecioVenta { get; set; }
+        public decimal Costo { get; set; }
+        public int StockActual { get; set; }
+        public int StockMinimo { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+    }
+}
