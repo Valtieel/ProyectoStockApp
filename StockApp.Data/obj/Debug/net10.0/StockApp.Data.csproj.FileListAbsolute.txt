@@ -15,3 +15,4 @@ C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Data\obj\Debug\net1
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Data\obj\Debug\net10.0\StockApp.Data.pdb
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Data\obj\Debug\net10.0\StockApp.Data.genruntimeconfig.cache
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Data\obj\Debug\net10.0\ref\StockApp.Data.dll
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Data\obj\Debug\net10.0\StockApp.Data.sourcelink.json

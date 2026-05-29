@@ -9,3 +9,4 @@ C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Core\obj\Debug\net1
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Core\obj\Debug\net10.0\refint\StockApp.Core.dll
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Core\obj\Debug\net10.0\StockApp.Core.pdb
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Core\obj\Debug\net10.0\ref\StockApp.Core.dll
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.Core\obj\Debug\net10.0\StockApp.Core.sourcelink.json

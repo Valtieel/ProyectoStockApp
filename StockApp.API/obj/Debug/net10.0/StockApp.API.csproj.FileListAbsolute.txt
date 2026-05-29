@@ -110,3 +110,4 @@ C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\obj\Debug\net10
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\obj\Debug\net10.0\StockApp.API.pdb
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\obj\Debug\net10.0\StockApp.API.genruntimeconfig.cache
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\obj\Debug\net10.0\ref\StockApp.API.dll
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\obj\Debug\net10.0\StockApp.API.sourcelink.json
