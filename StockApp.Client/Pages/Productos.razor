@@ -1,7 +1,48 @@
 @page "/productos"
 @inject HttpClient Http
 
-<h3>Productos</h3>
+<h3>📦 Productos</h3>
+
+<button class="btn-nuevo" @onclick="MostrarFormulario">+ Nuevo Producto</button>
+
+@if (mostrarFormulario)
+{
+    <div class="formulario">
+        <h4>@(productoEditando.Id == 0 ? "Nuevo Producto" : "Editar Producto")</h4>
+        <div class="campo">
+            <label>Nombre</label>
+            <input @bind="productoEditando.Nombre" placeholder="Nombre del producto" />
+        </div>
+        <div class="campo">
+            <label>Descripción</label>
+            <input @bind="productoEditando.Descripcion" placeholder="Descripción (opcional)" />
+        </div>
+        <div class="campo">
+            <label>Precio de venta</label>
+            <input type="number" @bind="productoEditando.PrecioVenta" />
+        </div>
+        <div class="campo">
+            <label>Costo</label>
+            <input type="number" @bind="productoEditando.Costo" />
+        </div>
+        <div class="campo">
+            <label>Stock actual</label>
+            <input type="number" @bind="productoEditando.StockActual" />
+        </div>
+        <div class="campo">
+            <label>Stock mínimo</label>
+            <input type="number" @bind="productoEditando.StockMinimo" />
+        </div>
+        <div class="campo">
+            <label>Fecha de vencimiento (opcional)</label>
+            <input type="date" @bind="productoEditando.FechaVencimiento" />
+        </div>
+        <div class="botones">
+            <button class="btn-guardar" @onclick="GuardarProducto">💾 Guardar</button>
+            <button class="btn-cancelar" @onclick="CancelarFormulario">Cancelar</button>
+        </div>
+    </div>
+}
 
 @if (productos == null)
 {
@@ -21,6 +62,8 @@ else
                 <th>Costo</th>
                 <th>Stock</th>
                 <th>Stock Mínimo</th>
+                <th>Vencimiento</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -32,25 +75,99 @@ else
                     <td>$@p.Costo</td>
                     <td>@p.StockActual</td>
                     <td>@p.StockMinimo</td>
+                    <td>@(p.FechaVencimiento.HasValue ? p.FechaVencimiento.Value.ToString("dd/MM/yyyy") : "-")</td>
+                    <td>
+                        <button class="btn-editar" @onclick="() => Editar(p)">✏️</button>
+                        <button class="btn-eliminar" @onclick="() => Eliminar(p.Id)">🗑️</button>
+                    </td>
                 </tr>
             }
         </tbody>
     </table>
 }
 
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <p class="mensaje">@mensaje</p>
+}
+
 @code {
     private List<Producto>? productos;
+    private Producto productoEditando = new();
+    private bool mostrarFormulario = false;
+    private string mensaje = string.Empty;
 
     protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
     {
         productos = await Http.GetFromJsonAsync<List<Producto>>("productos");
     }
 
-    // Clase que representa el producto que viene de la API
+    private void MostrarFormulario()
+    {
+        productoEditando = new Producto();
+        mostrarFormulario = true;
+        mensaje = string.Empty;
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormulario = false;
+        productoEditando = new Producto();
+    }
+
+    private void Editar(Producto p)
+    {
+        productoEditando = new Producto
+        {
+            Id = p.Id,
+            Nombre = p.Nombre,
+            Descripcion = p.Descripcion,
+            PrecioVenta = p.PrecioVenta,
+            Costo = p.Costo,
+            StockActual = p.StockActual,
+            StockMinimo = p.StockMinimo,
+            FechaVencimiento = p.FechaVencimiento
+        };
+        mostrarFormulario = true;
+        mensaje = string.Empty;
+    }
+
+    private async Task GuardarProducto()
+    {
+        if (productoEditando.Id == 0)
+        {
+            // Crear nuevo
+            await Http.PostAsJsonAsync("productos", productoEditando);
+            mensaje = "✅ Producto creado correctamente.";
+        }
+        else
+        {
+            // Editar existente
+            await Http.PutAsJsonAsync($"productos/{productoEditando.Id}", productoEditando);
+            mensaje = "✅ Producto actualizado correctamente.";
+        }
+
+        mostrarFormulario = false;
+        await CargarProductos();
+    }
+
+    private async Task Eliminar(int id)
+    {
+        await Http.DeleteAsync($"productos/{id}");
+        mensaje = "🗑️ Producto eliminado.";
+        await CargarProductos();
+    }
+
     public class Producto
     {
         public int Id { get; set; }
         public string Nombre { get; set; } = string.Empty;
+        public string? Descripcion { get; set; }
         public decimal PrecioVenta { get; set; }
         public decimal Costo { get; set; }
         public int StockActual { get; set; }
@@ -58,3 +175,111 @@ else
         public DateTime? FechaVencimiento { get; set; }
     }
 }
+
+<style>
+    h3 { margin-bottom: 1rem; }
+
+    .btn-nuevo {
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-bottom: 1rem;
+    }
+
+    .formulario {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        max-width: 500px;
+    }
+
+    .campo {
+        margin-bottom: 0.8rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .campo label {
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+
+    .campo input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .botones {
+        display: flex;
+        gap: 10px;
+        margin-top: 1rem;
+    }
+
+    .btn-guardar {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .btn-cancelar {
+        background-color: #95a5a6;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    th, td {
+        padding: 10px 14px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f4f4f4;
+        font-weight: 600;
+    }
+
+    tr:hover { background-color: #f9f9f9; }
+
+    .stock-bajo {
+        background-color: #ffe5e5;
+        color: #c0392b;
+        font-weight: bold;
+    }
+
+    .btn-editar, .btn-eliminar {
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 4px;
+    }
+
+    .mensaje {
+        margin-top: 1rem;
+        font-weight: 600;
+        color: #27ae60;
+    }
+</style>

@@ -1,0 +1,203 @@
+@page "/alertas"
+@inject HttpClient Http
+
+<h3>🚨 Alertas</h3>
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else
+{
+    <div class="resumen">
+        <div class="tarjeta @(resumen?.StockBajo > 0 ? "alerta" : "ok")">
+            <span class="numero">@resumen?.StockBajo</span>
+            <span class="label">Stock bajo</span>
+        </div>
+        <div class="tarjeta @(resumen?.PorVencer > 0 ? "advertencia" : "ok")">
+            <span class="numero">@resumen?.PorVencer</span>
+            <span class="label">Por vencer (30 días)</span>
+        </div>
+        <div class="tarjeta @(resumen?.Vencidos > 0 ? "alerta" : "ok")">
+            <span class="numero">@resumen?.Vencidos</span>
+            <span class="label">Vencidos</span>
+        </div>
+    </div>
+
+    @if (productosStockBajo.Any())
+    {
+        <h4>📉 Productos con stock bajo</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Stock actual</th>
+                    <th>Stock mínimo</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in productosStockBajo)
+                {
+                    <tr class="fila-alerta">
+                        <td>@p.Nombre</td>
+                        <td>@p.StockActual</td>
+                        <td>@p.StockMinimo</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (productosPorVencer.Any())
+    {
+        <h4>⏳ Productos por vencer</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Stock actual</th>
+                    <th>Vencimiento</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in productosPorVencer)
+                {
+                    <tr class="fila-advertencia">
+                        <td>@p.Nombre</td>
+                        <td>@p.StockActual</td>
+                        <td>@p.FechaVencimiento?.ToString("dd/MM/yyyy")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (productosVencidos.Any())
+    {
+        <h4>❌ Productos vencidos</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Stock actual</th>
+                    <th>Vencimiento</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in productosVencidos)
+                {
+                    <tr class="fila-alerta">
+                        <td>@p.Nombre</td>
+                        <td>@p.StockActual</td>
+                        <td>@p.FechaVencimiento?.ToString("dd/MM/yyyy")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (resumen?.HayAlertas == false)
+    {
+        <p class="todo-bien">✅ Todo bien, no hay alertas por el momento.</p>
+    }
+}
+
+@code {
+    private ResumenAlertas? resumen;
+    private List<ProductoDto> productosStockBajo = new();
+    private List<ProductoDto> productosPorVencer = new();
+    private List<ProductoDto> productosVencidos = new();
+    private bool cargando = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        resumen = await Http.GetFromJsonAsync<ResumenAlertas>("alertas/resumen");
+
+        var stockBajoResp = await Http.GetFromJsonAsync<AlertaResponse>("alertas/stock-bajo");
+        productosStockBajo = stockBajoResp?.Productos ?? new();
+
+        var porVencerResp = await Http.GetFromJsonAsync<AlertaResponse>("alertas/por-vencer");
+        productosPorVencer = porVencerResp?.Productos ?? new();
+
+        var vencidosResp = await Http.GetFromJsonAsync<AlertaResponse>("alertas/vencidos");
+        productosVencidos = vencidosResp?.Productos ?? new();
+
+        cargando = false;
+    }
+
+    public class ResumenAlertas
+    {
+        public int StockBajo { get; set; }
+        public int PorVencer { get; set; }
+        public int Vencidos { get; set; }
+        public bool HayAlertas { get; set; }
+    }
+
+    public class AlertaResponse
+    {
+        public int Cantidad { get; set; }
+        public string Mensaje { get; set; } = string.Empty;
+        public List<ProductoDto> Productos { get; set; } = new();
+    }
+
+    public class ProductoDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public int StockActual { get; set; }
+        public int StockMinimo { get; set; }
+        public DateTime? FechaVencimiento { get; set; }
+    }
+}
+
+<style>
+    h3 { margin-bottom: 1rem; }
+    h4 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
+
+    .resumen {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .tarjeta {
+        flex: 1;
+        border-radius: 10px;
+        padding: 1.2rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .tarjeta.ok { background-color: #eafaf1; border: 2px solid #2ecc71; }
+    .tarjeta.alerta { background-color: #fdecea; border: 2px solid #e74c3c; }
+    .tarjeta.advertencia { background-color: #fef9e7; border: 2px solid #f1c40f; }
+
+    .numero { font-size: 36px; font-weight: bold; }
+    .label { font-size: 14px; color: #555; }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+    }
+
+    th, td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th { background-color: #f4f4f4; font-weight: 600; }
+
+    .fila-alerta { background-color: #fdecea; }
+    .fila-advertencia { background-color: #fef9e7; }
+
+    .todo-bien {
+        font-size: 18px;
+        color: #27ae60;
+        font-weight: 600;
+        margin-top: 1rem;
+    }
+</style>

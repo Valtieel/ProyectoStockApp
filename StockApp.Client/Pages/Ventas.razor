@@ -1,0 +1,292 @@
+@page "/ventas"
+@inject HttpClient Http
+
+<h3>💰 Ventas</h3>
+
+<div class="panel">
+    <h4>Nueva Venta</h4>
+
+    @if (!cajaAbierta)
+    {
+        <p class="alerta">⚠️ No hay caja abierta. Abrí la caja antes de registrar ventas.</p>
+    }
+    else
+    {
+        <div class="campo">
+            <label>Método de pago</label>
+            <select @bind="metodoPago">
+                <option value="efectivo">💵 Efectivo</option>
+                <option value="transferencia">🏦 Transferencia</option>
+                <option value="tarjeta">💳 Tarjeta</option>
+            </select>
+        </div>
+
+        <h5>Productos</h5>
+        <div class="agregar-producto">
+            <select @bind="productoSeleccionadoId">
+                <option value="0">-- Seleccioná un producto --</option>
+                @foreach (var p in productos)
+                {
+                    <option value="@p.Id">@p.Nombre — $@p.PrecioVenta (Stock: @p.StockActual)</option>
+                }
+            </select>
+            <input type="number" @bind="cantidadSeleccionada" min="1" placeholder="Cantidad" />
+            <button class="btn-agregar" @onclick="AgregarItem">+ Agregar</button>
+        </div>
+
+        @if (items.Any())
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio</th>
+                        <th>Cantidad</th>
+                        <th>Subtotal</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in items)
+                    {
+                        <tr>
+                            <td>@item.NombreProducto</td>
+                            <td>$@item.PrecioUnitario</td>
+                            <td>@item.Cantidad</td>
+                            <td>$@(item.PrecioUnitario * item.Cantidad)</td>
+                            <td><button class="btn-quitar" @onclick="() => QuitarItem(item)">✖</button></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <div class="total">
+                <span>TOTAL:</span>
+                <strong>$@items.Sum(i => i.PrecioUnitario * i.Cantidad)</strong>
+            </div>
+
+            <button class="btn-cobrar" @onclick="RegistrarVenta">✅ Cobrar</button>
+        }
+    }
+</div>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <p class="mensaje">@mensaje</p>
+}
+
+@code {
+    private List<ProductoDto> productos = new();
+    private List<VentaItem> items = new();
+    private string metodoPago = "efectivo";
+    private int productoSeleccionadoId = 0;
+    private int cantidadSeleccionada = 1;
+    private bool cajaAbierta = false;
+    private string mensaje = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        productos = await Http.GetFromJsonAsync<List<ProductoDto>>("productos") ?? new();
+
+        try
+        {
+            var caja = await Http.GetFromJsonAsync<object>("cajas/actual");
+            cajaAbierta = caja != null;
+        }
+        catch
+        {
+            cajaAbierta = false;
+        }
+    }
+
+    private void AgregarItem()
+    {
+        if (productoSeleccionadoId == 0 || cantidadSeleccionada <= 0) return;
+
+        var producto = productos.FirstOrDefault(p => p.Id == productoSeleccionadoId);
+        if (producto == null) return;
+
+        // Si ya está en la lista sumamos la cantidad
+        var existente = items.FirstOrDefault(i => i.ProductoId == productoSeleccionadoId);
+        if (existente != null)
+        {
+            existente.Cantidad += cantidadSeleccionada;
+        }
+        else
+        {
+            items.Add(new VentaItem
+            {
+                ProductoId = producto.Id,
+                NombreProducto = producto.Nombre,
+                PrecioUnitario = producto.PrecioVenta,
+                Cantidad = cantidadSeleccionada
+            });
+        }
+
+        productoSeleccionadoId = 0;
+        cantidadSeleccionada = 1;
+    }
+
+    private void QuitarItem(VentaItem item)
+    {
+        items.Remove(item);
+    }
+
+    private async Task RegistrarVenta()
+    {
+        if (!items.Any()) return;
+
+        var request = new
+        {
+            MetodoPago = metodoPago,
+            Items = items.Select(i => new { i.ProductoId, i.Cantidad }).ToList()
+        };
+
+        var response = await Http.PostAsJsonAsync("ventas", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            mensaje = $"✅ Venta registrada por ${ items.Sum(i => i.PrecioUnitario * i.Cantidad)}";
+            items.Clear();
+            productos = await Http.GetFromJsonAsync<List<ProductoDto>>("productos") ?? new();
+        }
+        else
+        {
+            mensaje = "❌ Error al registrar la venta.";
+        }
+    }
+
+    public class ProductoDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public decimal PrecioVenta { get; set; }
+        public int StockActual { get; set; }
+    }
+
+    public class VentaItem
+    {
+        public int ProductoId { get; set; }
+        public string NombreProducto { get; set; } = string.Empty;
+        public decimal PrecioUnitario { get; set; }
+        public int Cantidad { get; set; }
+    }
+}
+
+<style>
+    h3 { margin-bottom: 1rem; }
+
+    .panel {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        max-width: 700px;
+        margin-bottom: 1.5rem;
+    }
+
+    .campo {
+        margin-bottom: 0.8rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .campo label {
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+
+    .campo select, .campo input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .agregar-producto {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 1rem;
+        align-items: center;
+    }
+
+    .agregar-producto select {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .agregar-producto input {
+        width: 80px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .btn-agregar {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+    }
+
+    th, td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th { background-color: #f4f4f4; font-weight: 600; }
+
+    .btn-quitar {
+        background: none;
+        border: none;
+        color: #e74c3c;
+        cursor: pointer;
+        font-size: 16px;
+    }
+
+    .total {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 1rem;
+    }
+
+    .btn-cobrar {
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        padding: 12px 30px;
+        border-radius: 8px;
+        font-size: 18px;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .alerta {
+        color: #e67e22;
+        font-weight: 600;
+    }
+
+    .mensaje {
+        font-weight: 600;
+        color: #27ae60;
+        margin-top: 1rem;
+    }
+</style>
