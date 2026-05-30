@@ -1,0 +1,220 @@
+@page "/movimientos"
+@inject HttpClient Http
+
+<h3>📋 Movimientos de Stock</h3>
+
+<div class="panel">
+    <h4>Registrar Movimiento</h4>
+
+    <div class="campo">
+        <label>Tipo</label>
+        <select @bind="tipo">
+            <option value="entrada">📥 Entrada (reponer stock)</option>
+            <option value="salida">📤 Salida manual (rotura, vencimiento, etc)</option>
+        </select>
+    </div>
+
+    <div class="campo">
+        <label>Producto</label>
+        <select @bind="productoSeleccionadoId">
+            <option value="0">-- Seleccioná un producto --</option>
+            @foreach (var p in productos)
+            {
+                <option value="@p.Id">@p.Nombre (Stock: @p.StockActual)</option>
+            }
+        </select>
+    </div>
+
+    <div class="campo">
+        <label>Cantidad</label>
+        <input type="number" @bind="cantidad" min="1" />
+    </div>
+
+    <div class="campo">
+        <label>Motivo (opcional)</label>
+        <input @bind="motivo" placeholder="Ej: Reposición de proveedor, mercadería rota..." />
+    </div>
+
+    <button class="btn-registrar" @onclick="RegistrarMovimiento">
+        @(tipo == "entrada" ? "📥 Registrar Entrada" : "📤 Registrar Salida")
+    </button>
+</div>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <p class="mensaje @(esError ? "error" : "")">@mensaje</p>
+}
+
+@if (movimientos.Any())
+{
+    <h4>Historial de movimientos</h4>
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Producto</th>
+                <th>Tipo</th>
+                <th>Cantidad</th>
+                <th>Motivo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var m in movimientos)
+            {
+                <tr class="@(m.Tipo == "entrada" ? "fila-entrada" : "fila-salida")">
+                    <td>@m.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>@m.Producto?.Nombre</td>
+                    <td>@(m.Tipo == "entrada" ? "📥 Entrada" : "📤 Salida")</td>
+                    <td>@m.Cantidad</td>
+                    <td>@(string.IsNullOrEmpty(m.Motivo) ? "-" : m.Motivo)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<ProductoDto> productos = new();
+    private List<MovimientoDto> movimientos = new();
+    private string tipo = "entrada";
+    private int productoSeleccionadoId = 0;
+    private int cantidad = 1;
+    private string motivo = string.Empty;
+    private string mensaje = string.Empty;
+    private bool esError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarDatos();
+    }
+
+    private async Task CargarDatos()
+    {
+        productos = await Http.GetFromJsonAsync<List<ProductoDto>>("productos") ?? new();
+        movimientos = await Http.GetFromJsonAsync<List<MovimientoDto>>("movimientos") ?? new();
+    }
+
+    private async Task RegistrarMovimiento()
+    {
+        if (productoSeleccionadoId == 0 || cantidad <= 0)
+        {
+            mensaje = "⚠️ Seleccioná un producto y una cantidad válida.";
+            esError = true;
+            return;
+        }
+
+        var request = new
+        {
+            ProductoId = productoSeleccionadoId,
+            Cantidad = cantidad,
+            Motivo = motivo
+        };
+
+        HttpResponseMessage response;
+
+        if (tipo == "entrada")
+            response = await Http.PostAsJsonAsync("movimientos/entrada", request);
+        else
+            response = await Http.PostAsJsonAsync("movimientos/salida", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            mensaje = tipo == "entrada"
+                ? "✅ Entrada registrada correctamente."
+                : "✅ Salida registrada correctamente.";
+            esError = false;
+            productoSeleccionadoId = 0;
+            cantidad = 1;
+            motivo = string.Empty;
+            await CargarDatos();
+        }
+        else
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            mensaje = $"❌ {error}";
+            esError = true;
+        }
+    }
+
+    public class ProductoDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public int StockActual { get; set; }
+    }
+
+    public class MovimientoDto
+    {
+        public int Id { get; set; }
+        public int ProductoId { get; set; }
+        public string Tipo { get; set; } = string.Empty;
+        public int Cantidad { get; set; }
+        public string? Motivo { get; set; }
+        public DateTime Fecha { get; set; }
+        public ProductoDto? Producto { get; set; }
+    }
+}
+
+<style>
+    h3 { margin-bottom: 1rem; }
+    h4 { margin-top: 1.5rem; margin-bottom: 0.8rem; }
+
+    .panel {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        max-width: 600px;
+        margin-bottom: 1.5rem;
+    }
+
+    .campo {
+        margin-bottom: 0.8rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .campo label {
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+
+    .campo input, .campo select {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .btn-registrar {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+        margin-top: 0.5rem;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+    }
+
+    th, td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th { background-color: #f4f4f4; font-weight: 600; }
+
+    .fila-entrada { background-color: #eafaf1; }
+    .fila-salida { background-color: #fdecea; }
+
+    .mensaje { font-weight: 600; color: #27ae60; margin-top: 1rem; }
+    .mensaje.error { color: #e74c3c; }
+</style>
