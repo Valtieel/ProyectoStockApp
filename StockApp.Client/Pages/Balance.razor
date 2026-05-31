@@ -1,0 +1,232 @@
+@page "/balance"
+@inject HttpClient Http
+
+<h3>📊 Balance Mensual</h3>
+
+<div class="panel">
+    <div class="filtros">
+        <div class="campo">
+            <label>Año</label>
+            <input type="number" @bind="año" min="2024" max="2030" />
+        </div>
+        <div class="campo">
+            <label>Mes</label>
+            <select @bind="mes">
+                <option value="1">Enero</option>
+                <option value="2">Febrero</option>
+                <option value="3">Marzo</option>
+                <option value="4">Abril</option>
+                <option value="5">Mayo</option>
+                <option value="6">Junio</option>
+                <option value="7">Julio</option>
+                <option value="8">Agosto</option>
+                <option value="9">Septiembre</option>
+                <option value="10">Octubre</option>
+                <option value="11">Noviembre</option>
+                <option value="12">Diciembre</option>
+            </select>
+        </div>
+        <button class="btn-buscar" @onclick="CargarBalance">🔍 Ver balance</button>
+    </div>
+</div>
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else if (balance != null)
+{
+    <div class="tarjetas">
+        <div class="tarjeta verde">
+            <span class="numero">$@balance.TotalVentas</span>
+            <span class="label">Total vendido</span>
+        </div>
+        <div class="tarjeta azul">
+            <span class="numero">@balance.CantidadVentas</span>
+            <span class="label">Cantidad de ventas</span>
+        </div>
+        @if (balance.ProductoMasVendido != null)
+        {
+            <div class="tarjeta naranja">
+                <span class="numero">@balance.ProductoMasVendido.Producto</span>
+                <span class="label">Producto más vendido</span>
+            </div>
+        }
+    </div>
+
+    @if (balance.PorMetodoPago.Any())
+    {
+        <h4>💳 Por método de pago</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Método</th>
+                    <th>Cantidad</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var m in balance.PorMetodoPago)
+                {
+                    <tr>
+                        <td>@m.Metodo</td>
+                        <td>@m.Cantidad</td>
+                        <td>$@m.Total</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @if (balance.VentasPorDia.Any())
+    {
+        <h4>📅 Ventas por día</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>Día</th>
+                    <th>Ventas</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in balance.VentasPorDia)
+                {
+                    <tr>
+                        <td>@d.Dia</td>
+                        <td>@d.Cantidad</td>
+                        <td>$@d.Total</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+}
+
+@code {
+    private int año = DateTime.Now.Year;
+    private int mes = DateTime.Now.Month;
+    private BalanceDto? balance;
+    private bool cargando = false;
+
+    private async Task CargarBalance()
+    {
+        cargando = true;
+        balance = await Http.GetFromJsonAsync<BalanceDto>($"balance?año={año}&mes={mes}");
+        cargando = false;
+    }
+
+    public class BalanceDto
+    {
+        public decimal TotalVentas { get; set; }
+        public int CantidadVentas { get; set; }
+        public List<MetodoPagoDto> PorMetodoPago { get; set; } = new();
+        public ProductoMasVendidoDto? ProductoMasVendido { get; set; }
+        public List<VentaDiaDto> VentasPorDia { get; set; } = new();
+    }
+
+    public class MetodoPagoDto
+    {
+        public string Metodo { get; set; } = string.Empty;
+        public int Cantidad { get; set; }
+        public decimal Total { get; set; }
+    }
+
+    public class ProductoMasVendidoDto
+    {
+        public string Producto { get; set; } = string.Empty;
+        public int TotalVendido { get; set; }
+    }
+
+    public class VentaDiaDto
+    {
+        public int Dia { get; set; }
+        public int Cantidad { get; set; }
+        public decimal Total { get; set; }
+    }
+}
+
+<style>
+    h3 { margin-bottom: 1rem; }
+    h4 { margin-top: 1.5rem; margin-bottom: 0.8rem; }
+
+    .panel {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .filtros {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-end;
+    }
+
+    .campo {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .campo label {
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .campo input, .campo select {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .btn-buscar {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .tarjetas {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .tarjeta {
+        flex: 1;
+        border-radius: 10px;
+        padding: 1.2rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .tarjeta.verde { background-color: #eafaf1; border: 2px solid #2ecc71; }
+    .tarjeta.azul { background-color: #eaf4fb; border: 2px solid #3498db; }
+    .tarjeta.naranja { background-color: #fef5e7; border: 2px solid #e67e22; }
+
+    .numero { font-size: 28px; font-weight: bold; }
+    .label { font-size: 13px; color: #555; }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+        max-width: 600px;
+    }
+
+    th, td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th { background-color: #f4f4f4; font-weight: 600; }
+</style>
