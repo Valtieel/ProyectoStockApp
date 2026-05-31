@@ -1,0 +1,191 @@
+@page "/actualizar-precios"
+@inject HttpClient Http
+
+<h3>💲 Actualizar Precios</h3>
+
+<div class="panel">
+    <p>Actualizá el precio de <strong>todos los productos</strong> de una sola vez ingresando un porcentaje.</p>
+
+    <div class="campo">
+        <label>Porcentaje de ajuste</label>
+        <div class="input-con-simbolo">
+            <input type="number" @bind="porcentaje" placeholder="Ej: 10" />
+            <span>%</span>
+        </div>
+        <small>
+            Usá números positivos para subir (ej: 10 = +10%) 
+            y negativos para bajar (ej: -5 = -5%)
+        </small>
+    </div>
+
+    @if (productos.Any())
+    {
+        <div class="preview">
+            <h5>Vista previa del cambio:</h5>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th>Precio actual</th>
+                        <th>Precio nuevo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in productos)
+                    {
+                        var precioNuevo = Math.Round(p.PrecioVenta + (p.PrecioVenta * (porcentaje / 100)), 2);
+                        <tr>
+                            <td>@p.Nombre</td>
+                            <td>$@p.PrecioVenta</td>
+                            <td class="@(porcentaje > 0 ? "subio" : porcentaje < 0 ? "bajo" : "")">
+                                $@precioNuevo
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <button class="btn-actualizar" @onclick="AplicarCambioPrecios">
+            💾 Aplicar cambio a todos los productos
+        </button>
+    }
+</div>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <p class="mensaje">@mensaje</p>
+}
+
+@code {
+    private List<ProductoDto> productos = new();
+    private decimal porcentaje = 0;
+    private string mensaje = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        productos = await Http.GetFromJsonAsync<List<ProductoDto>>("productos") ?? new();
+    }
+
+    private async Task AplicarCambioPrecios()
+    {
+        if (porcentaje == 0)
+        {
+            mensaje = "Ingresá un porcentaje distinto de 0.";
+            return;
+        }
+
+        var response = await Http.PostAsJsonAsync("productos/actualizar-precios", porcentaje);
+
+        if (response.IsSuccessStatusCode)
+        {
+            mensaje = $"✅ Precios actualizados correctamente con un {porcentaje}%.";
+            await CargarProductos();
+        }
+        else
+        {
+            mensaje = "❌ Error al actualizar los precios.";
+        }
+    }
+
+    public class ProductoDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public decimal PrecioVenta { get; set; }
+    }
+}
+
+<style>
+    h3 { margin-bottom: 1rem; }
+
+    .panel {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        max-width: 650px;
+        margin-bottom: 1.5rem;
+    }
+
+    .campo {
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .campo label {
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .campo small {
+        color: #777;
+        font-size: 12px;
+    }
+
+    .input-con-simbolo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .input-con-simbolo input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 16px;
+        width: 120px;
+    }
+
+    .input-con-simbolo span {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .preview {
+        margin-bottom: 1rem;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+    }
+
+    th, td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th { background-color: #f4f4f4; font-weight: 600; }
+
+    .subio { color: #e74c3c; font-weight: bold; }
+    .bajo { color: #27ae60; font-weight: bold; }
+
+    .btn-actualizar {
+        background-color: #e67e22;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    .mensaje {
+        font-weight: 600;
+        color: #27ae60;
+        margin-top: 1rem;
+    }
+}
+</style>

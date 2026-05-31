@@ -60,4 +60,34 @@ public class ProductosController : ControllerBase
         return NoContent();
     }
 
+    // POST api/productos/actualizar-precios
+    // Actualiza el precio de todos los productos por un porcentaje
+    // Ejemplo: 10 = sube 10%, -5 = baja 5%
+
+    [HttpPost("actualizar-precios")]
+    public async Task<IActionResult> ActualizarPrecios([FromBody] decimal porcentaje)
+    {
+        var productos = await _context.Productos
+        .Where(p => p.Activo)
+        .ToArrayAsync();
+
+        foreach(var producto in productos)
+        {
+            //calculamos el nuevo precio con el porcentaje
+            var aumento = producto.PrecioVenta * (porcentaje/100);
+            producto.PrecioVenta = Math.Round(producto.PrecioVenta + aumento, 2);
+        }
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            mensaje = $"Se actualizaron {productos.Count()} productos con un {porcentaje}%",
+            ProductosActualizados = productos.Count()
+        });
+    }
+
+
+
+
 }
