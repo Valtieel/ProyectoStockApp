@@ -1,0 +1,287 @@
+@page "/ofertas"
+@inject HttpClient Http
+
+<h3>🏷️ Ofertas y Descuentos</h3>
+
+<div class="panel">
+    <h4>Aplicar descuento a un producto</h4>
+
+    <div class="campo">
+        <label>Producto</label>
+        <select @bind="productoSeleccionadoId">
+            <option value="0">-- Seleccioná un producto --</option>
+            @foreach (var p in productos)
+            {
+                <option value="@p.Id">@p.Nombre — Precio actual: $@p.PrecioVenta</option>
+            }
+        </select>
+    </div>
+
+    <div class="opciones">
+        <div class="opcion @(modo == "descuento" ? "activa" : "")" @onclick='() => modo = "descuento"'>
+            📉 Descuento por porcentaje
+        </div>
+        <div class="opcion @(modo == "oferta" ? "activa" : "")" @onclick='() => modo = "oferta"'>
+            🏷️ Precio especial fijo
+        </div>
+    </div>
+
+    @if (modo == "descuento")
+    {
+        <div class="campo">
+            <label>Porcentaje de descuento</label>
+            <div class="input-con-simbolo">
+                <input type="number" @bind="porcentaje" min="1" max="99" />
+                <span>%</span>
+            </div>
+        </div>
+
+        @if (productoSeleccionadoId > 0 && porcentaje > 0)
+        {
+            var producto = productos.FirstOrDefault(p => p.Id == productoSeleccionadoId);
+            if (producto != null)
+            {
+                var precioConDescuento = Math.Round(producto.PrecioVenta - (producto.PrecioVenta * (porcentaje / 100)), 2);
+                <p class="preview">
+                    Precio actual: <strong>$@producto.PrecioVenta</strong> →
+                    Precio con descuento: <strong class="verde">$@precioConDescuento</strong>
+                </p>
+            }
+        }
+
+        <button class="btn-aplicar" @onclick="AplicarDescuento">💾 Aplicar descuento</button>
+    }
+    else
+    {
+        <div class="campo">
+            <label>Precio especial de oferta</label>
+            <input type="number" @bind="precioOferta" min="0" />
+        </div>
+
+        <button class="btn-aplicar" @onclick="AplicarOferta">💾 Aplicar precio de oferta</button>
+    }
+</div>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <p class="mensaje @(esError ? "error" : "")">@mensaje</p>
+}
+
+<h4>📋 Lista de productos y precios actuales</h4>
+<table>
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Precio actual</th>
+            <th>Costo</th>
+            <th>Margen</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in productos)
+        {
+            var margen = p.Costo > 0 ? Math.Round(((p.PrecioVenta - p.Costo) / p.Costo) * 100, 1) : 0;
+            <tr>
+                <td>@p.Nombre</td>
+                <td>$@p.PrecioVenta</td>
+                <td>$@p.Costo</td>
+                <td class="@(margen > 20 ? "verde" : "rojo")">@margen%</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@code {
+    private List<ProductoDto> productos = new();
+    private string modo = "descuento";
+    private int productoSeleccionadoId = 0;
+    private decimal porcentaje = 0;
+    private decimal precioOferta = 0;
+    private string mensaje = string.Empty;
+    private bool esError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProductos();
+    }
+
+    private async Task CargarProductos()
+    {
+        productos = await Http.GetFromJsonAsync<List<ProductoDto>>("productos") ?? new();
+    }
+
+    private async Task AplicarDescuento()
+    {
+        if (productoSeleccionadoId == 0 || porcentaje <= 0)
+        {
+            mensaje = "Seleccioná un producto y un porcentaje válido.";
+            esError = true;
+            return;
+        }
+
+        var response = await Http.PostAsJsonAsync($"productos/{productoSeleccionadoId}/descuento", porcentaje);
+
+        if (response.IsSuccessStatusCode)
+        {
+            mensaje = "Descuento aplicado correctamente.";
+            esError = false;
+            productoSeleccionadoId = 0;
+            porcentaje = 0;
+            await CargarProductos();
+        }
+        else
+        {
+            mensaje = "Error al aplicar el descuento.";
+            esError = true;
+        }
+    }
+
+    private async Task AplicarOferta()
+    {
+        if (productoSeleccionadoId == 0 || precioOferta <= 0)
+        {
+            mensaje = "Seleccioná un producto y un precio válido.";
+            esError = true;
+            return;
+        }
+
+        var request = new { PrecioOferta = precioOferta };
+        var response = await Http.PostAsJsonAsync($"productos/{productoSeleccionadoId}/oferta", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            mensaje = "Precio de oferta aplicado correctamente.";
+            esError = false;
+            productoSeleccionadoId = 0;
+            precioOferta = 0;
+            await CargarProductos();
+        }
+        else
+        {
+            mensaje = "Error al aplicar la oferta.";
+            esError = true;
+        }
+    }
+
+    public class ProductoDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public decimal PrecioVenta { get; set; }
+        public decimal Costo { get; set; }
+    }
+}
+
+<style>
+    h3 { margin-bottom: 1rem; }
+    h4 { margin-top: 1.5rem; margin-bottom: 0.8rem; }
+
+    .panel {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        max-width: 600px;
+        margin-bottom: 1.5rem;
+    }
+
+    .campo {
+        margin-bottom: 0.8rem;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .campo label {
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .campo input, .campo select {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .input-con-simbolo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .input-con-simbolo input {
+        width: 120px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .input-con-simbolo span {
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .opciones {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 1rem;
+    }
+
+    .opcion {
+        flex: 1;
+        padding: 10px;
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        text-align: center;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .opcion.activa {
+        border-color: #3498db;
+        background-color: #eaf4fb;
+        color: #3498db;
+    }
+
+    .preview {
+        background: #f0f0f0;
+        padding: 8px 12px;
+        border-radius: 6px;
+        margin-bottom: 0.8rem;
+        font-size: 15px;
+    }
+
+    .btn-aplicar {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+        margin-top: 0.5rem;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1rem;
+    }
+
+    th, td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th { background-color: #f4f4f4; font-weight: 600; }
+
+    .verde { color: #27ae60; font-weight: bold; }
+    .rojo  { color: #e74c3c; font-weight: bold; }
+
+    .mensaje { font-weight: 600; color: #27ae60; margin-top: 1rem; }
+    .mensaje.error { color: #e74c3c; }
+</style>

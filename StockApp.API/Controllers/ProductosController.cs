@@ -87,7 +87,51 @@ public class ProductosController : ControllerBase
         });
     }
 
+    // POST api/productos/{id}/oferta
+    // Activa una oferta para un producto con un precio especial
+    [HttpPost("{id}/oferta")]
+    public async Task<IActionResult> ActivarOferta(int id, [FromBody] OfertaRequest request)
+    {
+        var producto = await _context.Productos.FindAsync(id);
+        if(producto == null)
+        return NotFound();
 
+        //guardamos el precio origignal y aplicamos el precio de oferta
+        producto.PrecioVenta = request.PrecioOferta;
 
+        await _context.SaveChangesAsync();
 
+        return Ok(new
+        {
+            Mensaje = $"Oferta activada para {producto.Nombre}. Nuevo precio: ${producto.PrecioVenta}",
+            Producto = producto
+        });
+
+    }
+    // POST api/productos/{id}/descuento
+    // POST api/productos/{id}/descuento
+    [HttpPost("{id}/descuento")]
+    public async Task<IActionResult> AplicarDescuento(int id, [FromBody] decimal porcentaje)
+    {
+        var producto = await _context.Productos.FindAsync(id);
+        if(producto == null)
+        return NotFound();
+
+        var descuento = producto.PrecioVenta * (porcentaje / 100);
+        producto.PrecioVenta = Math.Round(producto.PrecioVenta - descuento, 2);
+
+        await _context.SaveChangesAsync();
+
+        return Ok(new
+        {
+            Mensaje = $"Descuento de {porcentaje}% aplicado a {producto.Nombre}. Nuevo precio: ${producto.PrecioVenta}",
+            Producto = producto
+        });
+    }
+
+}
+
+public class OfertaRequest
+{
+    public decimal PrecioOferta { get; set; }
 }
