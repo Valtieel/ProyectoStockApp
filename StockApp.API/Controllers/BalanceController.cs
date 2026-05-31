@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using StockApp.Core.Entities;
 using Microsoft.EntityFrameworkCore;
 using StockApp.Data;
+using System.Reflection.Metadata;
 
 namespace StockApp.API.Controllers;
 
@@ -76,5 +77,57 @@ public class BalanceController : ControllerBase
             ProductoMasVendido = productoMasVendido,
             VentasPorDia = ventasPorDia
         });
+    }
+
+    // GET api/balance/hoy
+// Devuelve el resumen del día para el dashboard
+
+[HttpGet("hoy")]
+public async Task<IActionResult> GetResumenHoy()
+    {
+        var hoy = DateTime.Now;
+
+        //ventas por hoy
+        var ventas = await _context.Ventas
+        .Where(v => v.Fecha.Date == hoy)
+        .ToListAsync();
+
+        var totalHoy = ventas.Sum(v => v.Total);
+        var cantidadHoy = ventas.Count;
+
+        //Caja abierta
+        var cajaAbierta = await _context.Cajas
+        .AnyAsync(c => c.Abierta);
+
+        //alerta
+        var stockBajo = await _context.Productos
+        .CountAsync(p => p.Activo && p.StockActual <= p.StockMinimo);
+
+        var vencidos = await _context.Productos
+        .CountAsync(p => p.Activo
+        && p.FechaVencimiento.HasValue
+        && p.FechaVencimiento.Value < hoy);
+
+        var porVencer = await _context.Productos
+        .CountAsync(p => p.Activo
+        && p.FechaVencimiento.HasValue
+        && p.FechaVencimiento.Value >= hoy
+        && p.FechaVencimiento.Value <= hoy.AddDays(30));
+
+        //total productos
+        var totalProdcutos = await _context.Productos
+        .CountAsync(p => p.Activo);
+
+        return Ok(new
+        {
+            Fecha = hoy,
+            TotalVentasHoy = totalHoy,
+            CantidadVentasHoy = cantidadHoy,
+            CajaAbierta = cajaAbierta,
+            StockBajo = stockBajo,
+            Venncidos = vencidos,
+            PorVencer = porVencer,
+            totalProdcutos = totalProdcutos
+        });  
     }
 }
