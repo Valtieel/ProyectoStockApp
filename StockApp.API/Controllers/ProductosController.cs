@@ -17,13 +17,32 @@ public class ProductosController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
-    {
-        var productos = await _context.Productos
+public async Task<IActionResult> GetAll()
+{
+    var productos = await _context.Productos
+        .Include(p => p.Categoria) // Incluimos la categoría
         .Where(p => p.Activo)
         .ToListAsync();
-        return Ok(productos);
-    }
+
+    // Mapeamos para incluir el nombre de la categoría
+    var resultado = productos.Select(p => new
+    {
+        p.Id,
+        p.Nombre,
+        p.Descripcion,
+        p.CategoriaId,
+        CategoriaNombre = p.Categoria != null ? p.Categoria.Nombre : null,
+        p.PrecioVenta,
+        p.Costo,
+        p.StockActual,
+        p.StockMinimo,
+        p.FechaVencimiento,
+        p.Activo,
+        p.FechaCreacion
+    });
+
+    return Ok(resultado);
+}
 
     [HttpGet("{id}")]
     public async Task<IActionResult> GetById(int id)

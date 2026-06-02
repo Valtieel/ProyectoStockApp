@@ -18,6 +18,16 @@
             <input @bind="productoEditando.Descripcion" placeholder="Descripción (opcional)" />
         </div>
         <div class="campo">
+            <label>Categoría</label>
+            <select @bind="productoEditando.CategoriaId">
+                <option value="">-- Sin categoría --</option>
+                @foreach (var c in categorias)
+                {
+                    <option value="@c.Id">@c.Nombre</option>
+                }
+            </select>
+        </div>
+        <div class="campo">
             <label>Precio de venta</label>
             <input type="number" @bind="productoEditando.PrecioVenta" />
         </div>
@@ -35,7 +45,7 @@
         </div>
         <div class="campo">
             <label>Fecha de vencimiento (opcional)</label>
-            <input type="date" @bind="productoEditando.FechaVencimiento" />
+            <input type="date" @bind="productoEditando.FechaVencimiento" @bind:format="yyyy-MM-dd" />
         </div>
         <div class="botones">
             <button class="btn-guardar" @onclick="GuardarProducto">💾 Guardar</button>
@@ -58,6 +68,7 @@ else
         <thead>
             <tr>
                 <th>Nombre</th>
+                <th>Categoría</th>
                 <th>Precio</th>
                 <th>Costo</th>
                 <th>Stock</th>
@@ -71,6 +82,7 @@ else
             {
                 <tr class="@(p.StockActual <= p.StockMinimo ? "stock-bajo" : "")">
                     <td>@p.Nombre</td>
+                    <td>@(p.CategoriaNombre ?? "-")</td>
                     <td>$@p.PrecioVenta</td>
                     <td>$@p.Costo</td>
                     <td>@p.StockActual</td>
@@ -93,6 +105,7 @@ else
 
 @code {
     private List<Producto>? productos;
+    private List<CategoriaDto> categorias = new();
     private Producto productoEditando = new();
     private bool mostrarFormulario = false;
     private string mensaje = string.Empty;
@@ -100,6 +113,7 @@ else
     protected override async Task OnInitializedAsync()
     {
         await CargarProductos();
+        categorias = await Http.GetFromJsonAsync<List<CategoriaDto>>("categorias") ?? new();
     }
 
     private async Task CargarProductos()
@@ -127,6 +141,7 @@ else
             Id = p.Id,
             Nombre = p.Nombre,
             Descripcion = p.Descripcion,
+            CategoriaId = p.CategoriaId,
             PrecioVenta = p.PrecioVenta,
             Costo = p.Costo,
             StockActual = p.StockActual,
@@ -141,15 +156,13 @@ else
     {
         if (productoEditando.Id == 0)
         {
-            // Crear nuevo
             await Http.PostAsJsonAsync("productos", productoEditando);
-            mensaje = "✅ Producto creado correctamente.";
+            mensaje = "Producto creado correctamente.";
         }
         else
         {
-            // Editar existente
             await Http.PutAsJsonAsync($"productos/{productoEditando.Id}", productoEditando);
-            mensaje = "✅ Producto actualizado correctamente.";
+            mensaje = "Producto actualizado correctamente.";
         }
 
         mostrarFormulario = false;
@@ -159,7 +172,7 @@ else
     private async Task Eliminar(int id)
     {
         await Http.DeleteAsync($"productos/{id}");
-        mensaje = "🗑️ Producto eliminado.";
+        mensaje = "Producto eliminado.";
         await CargarProductos();
     }
 
@@ -168,11 +181,19 @@ else
         public int Id { get; set; }
         public string Nombre { get; set; } = string.Empty;
         public string? Descripcion { get; set; }
+        public int? CategoriaId { get; set; }
+        public string? CategoriaNombre { get; set; }
         public decimal PrecioVenta { get; set; }
         public decimal Costo { get; set; }
         public int StockActual { get; set; }
         public int StockMinimo { get; set; }
         public DateTime? FechaVencimiento { get; set; }
+    }
+
+    public class CategoriaDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
     }
 }
 
@@ -211,7 +232,7 @@ else
         font-size: 14px;
     }
 
-    .campo input {
+    .campo input, .campo select {
         padding: 8px;
         border: 1px solid #ccc;
         border-radius: 6px;
