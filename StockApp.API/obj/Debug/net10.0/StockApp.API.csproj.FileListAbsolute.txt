@@ -119,3 +119,11 @@ C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\bin\Debug\net10
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\bin\Debug\net10.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\bin\Debug\net10.0\Microsoft.IdentityModel.Tokens.dll
 C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\bin\Debug\net10.0\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\bin\Debug\net10.0\ClosedXML.dll
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\bin\Debug\net10.0\ClosedXML.Parser.dll
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\bin\Debug\net10.0\DocumentFormat.OpenXml.dll
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\bin\Debug\net10.0\DocumentFormat.OpenXml.Framework.dll
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\bin\Debug\net10.0\ExcelNumberFormat.dll
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\bin\Debug\net10.0\RBush.dll
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\bin\Debug\net10.0\SixLabors.Fonts.dll
+C:\Users\Lutho\OneDrive\Escritorio\ProyectoStockApp\StockApp.API\bin\Debug\net10.0\System.IO.Packaging.dll
