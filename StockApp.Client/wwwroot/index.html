@@ -13,6 +13,14 @@
     <link href="StockApp.Client.styles.css" rel="stylesheet" />
     <script type="importmap"></script>
 </head>
+<script>
+    function descargarArchivo(base64, fileName) {
+        const link = document.createElement('a');
+        link.href = 'data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64,' + base64;
+        link.download = fileName;
+        link.click();
+    }
+</script>
 
 <body>
     <div id="app">

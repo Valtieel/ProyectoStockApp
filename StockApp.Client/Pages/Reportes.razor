@@ -1,0 +1,228 @@
+@page "/reportes"
+@inject HttpClient Http
+@inject IJSRuntime JS
+
+<h3>📊 Reportes</h3>
+
+<div class="panel">
+    <h4>📅 Período</h4>
+    <div class="filtros">
+        <div class="campo">
+            <label>Desde</label>
+            <div class="fecha-filtro">
+                <select @bind="mesDesde">
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+                <input type="number" @bind="añoDesde" min="2024" max="2099" />
+            </div>
+        </div>
+        <div class="campo">
+            <label>Hasta</label>
+            <div class="fecha-filtro">
+                <select @bind="mesHasta">
+                    <option value="1">Enero</option>
+                    <option value="2">Febrero</option>
+                    <option value="3">Marzo</option>
+                    <option value="4">Abril</option>
+                    <option value="5">Mayo</option>
+                    <option value="6">Junio</option>
+                    <option value="7">Julio</option>
+                    <option value="8">Agosto</option>
+                    <option value="9">Septiembre</option>
+                    <option value="10">Octubre</option>
+                    <option value="11">Noviembre</option>
+                    <option value="12">Diciembre</option>
+                </select>
+                <input type="number" @bind="añoHasta" min="2024" max="2099" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="reportes-grid">
+    <div class="reporte-card">
+        <div class="icono">💰</div>
+        <h4>Reporte de Ventas</h4>
+        <p>Todas las ventas del período con detalle de productos, precios y métodos de pago.</p>
+        <button class="btn-descargar azul" @onclick="DescargarVentas">
+            📥 Descargar Excel
+        </button>
+    </div>
+
+    <div class="reporte-card">
+        <div class="icono">📦</div>
+        <h4>Reporte de Stock</h4>
+        <p>Estado actual del stock con alertas de productos bajo mínimo y por vencer.</p>
+        <button class="btn-descargar verde" @onclick="DescargarStock">
+            📥 Descargar Excel
+        </button>
+    </div>
+
+    <div class="reporte-card">
+        <div class="icono">📋</div>
+        <h4>Reporte de Movimientos</h4>
+        <p>Todas las entradas y salidas de mercadería del período seleccionado.</p>
+        <button class="btn-descargar naranja" @onclick="DescargarMovimientos">
+            📥 Descargar Excel
+        </button>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <p class="mensaje">@mensaje</p>
+}
+
+@code {
+    private int mesDesde = 1;
+    private int añoDesde = DateTime.Now.Year;
+    private int mesHasta = DateTime.Now.Month;
+    private int añoHasta = DateTime.Now.Year;
+    private string mensaje = string.Empty;
+
+    private async Task DescargarVentas()
+    {
+        await Descargar($"reportes/ventas?añoDesde={añoDesde}&mesDesde={mesDesde}&añoHasta={añoHasta}&mesHasta={mesHasta}");
+    }
+
+    private async Task DescargarStock()
+    {
+        await Descargar("reportes/stock");
+    }
+
+    private async Task DescargarMovimientos()
+    {
+        await Descargar($"reportes/movimientos?añoDesde={añoDesde}&mesDesde={mesDesde}&añoHasta={añoHasta}&mesHasta={mesHasta}");
+    }
+
+    private async Task Descargar(string url)
+    {
+        mensaje = "Generando reporte...";
+
+        var response = await Http.GetAsync(url);
+
+        if (response.IsSuccessStatusCode)
+        {
+            var bytes = await response.Content.ReadAsByteArrayAsync();
+            var base64 = Convert.ToBase64String(bytes);
+            var fileName = response.Content.Headers.ContentDisposition?.FileName ?? "reporte.xlsx";
+
+            await JS.InvokeVoidAsync("descargarArchivo", base64, fileName);
+            mensaje = "Reporte descargado correctamente.";
+        }
+        else
+        {
+            mensaje = "Error al generar el reporte.";
+        }
+    }
+}
+
+<style>
+    h3 { margin-bottom: 1rem; }
+    h4 { margin-bottom: 0.8rem; }
+
+    .panel {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .filtros {
+        display: flex;
+        gap: 2rem;
+        align-items: flex-end;
+    }
+
+    .campo {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .campo label {
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .fecha-filtro {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .fecha-filtro select {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .fecha-filtro input {
+        width: 80px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .reportes-grid {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        margin-bottom: 1.5rem;
+    }
+
+    .reporte-card {
+        flex: 1;
+        min-width: 200px;
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .icono { font-size: 40px; }
+
+    .reporte-card p {
+        color: #666;
+        font-size: 14px;
+        flex: 1;
+    }
+
+    .btn-descargar {
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+        margin-top: auto;
+    }
+
+    .btn-descargar.azul { background-color: #3498db; }
+    .btn-descargar.verde { background-color: #2ecc71; }
+    .btn-descargar.naranja { background-color: #e67e22; }
+
+    .mensaje {
+        font-weight: 600;
+        color: #27ae60;
+        margin-top: 1rem;
+    }
+</style>
