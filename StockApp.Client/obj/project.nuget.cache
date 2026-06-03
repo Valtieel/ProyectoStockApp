@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "zDPjk7d/cxQ=",
+  "dgSpecHash": "2Vnh96BXmLQ=",
   "success": true,
   "projectFilePath": "C:\\Users\\Lutho\\OneDrive\\Escritorio\\ProyectoStockApp\\StockApp.Client\\StockApp.Client.csproj",
   "expectedPackageFiles": [
@@ -8,6 +8,7 @@
     "C:\\Users\\Lutho\\.nuget\\packages\\microsoft.aspnetcore.authorization\\10.0.8\\microsoft.aspnetcore.authorization.10.0.8.nupkg.sha512",
     "C:\\Users\\Lutho\\.nuget\\packages\\microsoft.aspnetcore.components\\10.0.8\\microsoft.aspnetcore.components.10.0.8.nupkg.sha512",
     "C:\\Users\\Lutho\\.nuget\\packages\\microsoft.aspnetcore.components.analyzers\\10.0.8\\microsoft.aspnetcore.components.analyzers.10.0.8.nupkg.sha512",
+    "C:\\Users\\Lutho\\.nuget\\packages\\microsoft.aspnetcore.components.authorization\\10.0.8\\microsoft.aspnetcore.components.authorization.10.0.8.nupkg.sha512",
     "C:\\Users\\Lutho\\.nuget\\packages\\microsoft.aspnetcore.components.forms\\10.0.8\\microsoft.aspnetcore.components.forms.10.0.8.nupkg.sha512",
     "C:\\Users\\Lutho\\.nuget\\packages\\microsoft.aspnetcore.components.web\\10.0.8\\microsoft.aspnetcore.components.web.10.0.8.nupkg.sha512",
     "C:\\Users\\Lutho\\.nuget\\packages\\microsoft.aspnetcore.components.webassembly\\10.0.8\\microsoft.aspnetcore.components.webassembly.10.0.8.nupkg.sha512",

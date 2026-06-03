@@ -13,6 +13,7 @@ public class AppDbContext : DbContext
     public DbSet<DetalleVenta> DetalleVentas{get; set;}
     public DbSet<Caja> Cajas {get; set;}
     public DbSet<Categoria> Categorias {get; set;}
+    public DbSet<Usuario> Usuarios {get; set;}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
