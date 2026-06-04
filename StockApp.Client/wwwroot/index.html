@@ -12,6 +12,12 @@
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="StockApp.Client.styles.css" rel="stylesheet" />
     <script type="importmap"></script>
+    <style>
+    @media print {
+        .sidebar { display: none !important; }
+        .top-row { display: none !important; }
+    }
+</style>
 </head>
 <script>
     function descargarArchivo(base64, fileName) {
@@ -20,8 +26,13 @@
         link.download = fileName;
         link.click();
     }
-</script>
 
+  function imprimirTicket() {
+    setTimeout(function() {
+        window.print();
+    }, 500);
+}
+</script>
 <body>
     <div id="app">
         <svg class="loading-progress">

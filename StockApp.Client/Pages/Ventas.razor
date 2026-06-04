@@ -1,5 +1,6 @@
 @page "/ventas"
 @inject HttpClient Http
+@inject IJSRuntime JS
 
 <h3>💰 Ventas</h3>
 
@@ -70,6 +71,50 @@
     }
 </div>
 
+@if (ultimaVenta != null)
+{
+    <div class="ticket" id="ticket-imprimir">
+        <div class="ticket-header">
+            <h2>📦 StockApp</h2>
+            <p>@ultimaVenta.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
+        </div>
+        <hr />
+        <table class="ticket-tabla">
+            <thead>
+                <tr>
+                    <th>Producto</th>
+                    <th>Cant.</th>
+                    <th>Precio</th>
+                    <th>Subtotal</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in ultimaVenta.Items)
+                {
+                    <tr>
+                        <td>@item.NombreProducto</td>
+                        <td>@item.Cantidad</td>
+                        <td>$@item.PrecioUnitario</td>
+                        <td>$@(item.PrecioUnitario * item.Cantidad)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <hr />
+        <div class="ticket-total">
+            <span>TOTAL:</span>
+            <strong>$@ultimaVenta.Total</strong>
+        </div>
+        <div class="ticket-pago">
+            Método de pago: @ultimaVenta.MetodoPago
+        </div>
+        <hr />
+        <p class="ticket-footer">¡Gracias por su compra!</p>
+        <button class="btn-imprimir no-print" @onclick="Imprimir">🖨️ Imprimir ticket</button>
+        <button class="btn-cerrar-ticket no-print" @onclick="CerrarTicket">✖ Cerrar</button>
+    </div>
+}
+
 @if (!string.IsNullOrEmpty(mensaje))
 {
     <p class="mensaje">@mensaje</p>
@@ -83,6 +128,7 @@
     private int cantidadSeleccionada = 1;
     private bool cajaAbierta = false;
     private string mensaje = string.Empty;
+    private TicketData? ultimaVenta;
 
     protected override async Task OnInitializedAsync()
     {
@@ -106,7 +152,6 @@
         var producto = productos.FirstOrDefault(p => p.Id == productoSeleccionadoId);
         if (producto == null) return;
 
-        // Si ya está en la lista sumamos la cantidad
         var existente = items.FirstOrDefault(i => i.ProductoId == productoSeleccionadoId);
         if (existente != null)
         {
@@ -146,14 +191,34 @@
 
         if (response.IsSuccessStatusCode)
         {
-            mensaje = $"✅ Venta registrada por ${ items.Sum(i => i.PrecioUnitario * i.Cantidad)}";
+            // Guardamos los datos para el ticket
+            ultimaVenta = new TicketData
+            {
+                Fecha = DateTime.Now,
+                MetodoPago = metodoPago,
+                Total = items.Sum(i => i.PrecioUnitario * i.Cantidad),
+                Items = items.ToList()
+            };
+
+            mensaje = $"✅ Venta registrada por ${ultimaVenta.Total}";
             items.Clear();
             productos = await Http.GetFromJsonAsync<List<ProductoDto>>("productos") ?? new();
         }
         else
         {
-            mensaje = "❌ Error al registrar la venta.";
+            var error = await response.Content.ReadAsStringAsync();
+            mensaje = $"❌ {error}";
         }
+    }
+
+    private async Task Imprimir()
+    {
+        await JS.InvokeVoidAsync("imprimirTicket");
+    }
+
+    private void CerrarTicket()
+    {
+        ultimaVenta = null;
     }
 
     public class ProductoDto
@@ -170,6 +235,14 @@
         public string NombreProducto { get; set; } = string.Empty;
         public decimal PrecioUnitario { get; set; }
         public int Cantidad { get; set; }
+    }
+
+    public class TicketData
+    {
+        public DateTime Fecha { get; set; }
+        public string MetodoPago { get; set; } = string.Empty;
+        public decimal Total { get; set; }
+        public List<VentaItem> Items { get; set; } = new();
     }
 }
 
@@ -189,15 +262,15 @@
         margin-bottom: 0.8rem;
         display: flex;
         flex-direction: column;
+        gap: 4px;
     }
 
     .campo label {
         font-weight: 600;
-        margin-bottom: 4px;
         font-size: 14px;
     }
 
-    .campo select, .campo input {
+    .campo select {
         padding: 8px;
         border: 1px solid #ccc;
         border-radius: 6px;
@@ -284,9 +357,98 @@
         font-weight: 600;
     }
 
+    .ticket {
+        background: white;
+        border: 2px dashed #ccc;
+        border-radius: 10px;
+        padding: 1.5rem;
+        max-width: 400px;
+        margin-top: 1.5rem;
+        font-family: monospace;
+    }
+
+    .ticket-header {
+        text-align: center;
+    }
+
+    .ticket-header h2 {
+        margin: 0;
+        font-size: 22px;
+    }
+
+    .ticket-header p {
+        color: #777;
+        font-size: 13px;
+        margin: 4px 0;
+    }
+
+    .ticket-tabla {
+        width: 100%;
+        font-size: 13px;
+    }
+
+    .ticket-tabla th, .ticket-tabla td {
+        padding: 4px 6px;
+        border: none;
+        border-bottom: 1px dotted #ddd;
+    }
+
+    .ticket-total {
+        display: flex;
+        justify-content: space-between;
+        font-size: 18px;
+        font-weight: bold;
+        margin: 8px 0;
+    }
+
+    .ticket-pago {
+        font-size: 13px;
+        color: #555;
+        margin-bottom: 8px;
+    }
+
+    .ticket-footer {
+        text-align: center;
+        font-size: 13px;
+        color: #777;
+    }
+
+    .btn-imprimir {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+        margin-top: 10px;
+        margin-right: 8px;
+    }
+
+    .btn-cerrar-ticket {
+        background-color: #95a5a6;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+        margin-top: 10px;
+    }
+
     .mensaje {
         font-weight: 600;
         color: #27ae60;
         margin-top: 1rem;
+    }
+
+    @@media print {
+        .no-print { display: none !important; }
+        .panel { display: none !important; }
+        .mensaje { display: none !important; }
+        .ticket {
+            border: none;
+            max-width: 100%;
+        }
     }
 </style>

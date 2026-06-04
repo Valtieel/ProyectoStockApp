@@ -62,6 +62,10 @@
     </div>
 }
 
+<div class="buscador">
+    <input @bind="textoBusqueda" @bind:event="oninput" placeholder="🔍 Buscar producto..." />
+</div>
+
 @if (productos == null)
 {
     <p>Cargando...</p>
@@ -86,7 +90,9 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var p in productos)
+            @foreach (var p in productos.Where(p =>
+                string.IsNullOrEmpty(textoBusqueda) ||
+                p.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)))
             {
                 <tr class="@(p.StockActual <= p.StockMinimo ? "stock-bajo" : "")">
                     <td>@p.Nombre</td>
@@ -117,6 +123,7 @@ else
     private Producto productoEditando = new();
     private bool mostrarFormulario = false;
     private string mensaje = string.Empty;
+    private string textoBusqueda = string.Empty;
 
     private int? diaVencimiento;
     private int? mesVencimiento;
@@ -177,7 +184,6 @@ else
 
     private async Task GuardarProducto()
     {
-        // Construimos la fecha a partir de los tres campos
         if (diaVencimiento.HasValue && mesVencimiento.HasValue && anioVencimiento.HasValue)
         {
             try
@@ -273,6 +279,18 @@ else
         border-radius: 8px;
         font-size: 15px;
         text-decoration: none;
+    }
+
+    .buscador {
+        margin-bottom: 1rem;
+    }
+
+    .buscador input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 15px;
+        width: 300px;
     }
 
     .formulario {
