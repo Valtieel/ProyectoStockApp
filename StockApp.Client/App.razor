@@ -12,6 +12,9 @@
 @code {
     protected override async Task OnInitializedAsync()
     {
+        // Cargamos el token al iniciar la app
+        await Auth.CargarToken();
+
         var uri = Nav.Uri;
         var esLogin = uri.Contains("/login");
 

@@ -14,6 +14,8 @@ public class AppDbContext : DbContext
     public DbSet<Caja> Cajas {get; set;}
     public DbSet<Categoria> Categorias {get; set;}
     public DbSet<Usuario> Usuarios {get; set;}
+    public DbSet<Cliente> Clientes{get; set;}
+    public DbSet<CuentaCorriente> CuentaCorrientes {get; set;}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -22,7 +24,13 @@ public class AppDbContext : DbContext
          entity.Property(p => p.Nombre).IsRequired().HasMaxLength(200);
          entity.Property(p => p.PrecioVenta).HasPrecision(10, 2);
          entity.Property(p => p.Costo).HasPrecision(10, 2);   
+         
+         
         });
+        modelBuilder.Entity<CuentaCorriente>(entity =>
+{
+    entity.Property(c => c.Monto).HasPrecision(10, 2);
+});
 
         modelBuilder.Entity<Venta>(entity =>
         {

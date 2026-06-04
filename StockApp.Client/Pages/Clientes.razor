@@ -1,0 +1,443 @@
+@page "/clientes"
+@inject HttpClient Http
+
+<h3>👥 Clientes</h3>
+
+<button class="btn-nuevo" @onclick="MostrarFormulario">+ Nuevo Cliente</button>
+
+@if (mostrarFormulario)
+{
+    <div class="formulario">
+        <h4>@(clienteEditando.Id == 0 ? "Nuevo Cliente" : "Editar Cliente")</h4>
+        <div class="campo">
+            <label>Nombre</label>
+            <input @bind="clienteEditando.Nombre" placeholder="Nombre del cliente" />
+        </div>
+        <div class="campo">
+            <label>Teléfono (opcional)</label>
+            <input @bind="clienteEditando.Telefono" placeholder="Ej: 3464123456" />
+        </div>
+        <div class="campo">
+            <label>Dirección (opcional)</label>
+            <input @bind="clienteEditando.Direccion" placeholder="Ej: San Martín 123" />
+        </div>
+        <div class="botones">
+            <button class="btn-guardar" @onclick="GuardarCliente">💾 Guardar</button>
+            <button class="btn-cancelar" @onclick="CancelarFormulario">Cancelar</button>
+        </div>
+    </div>
+}
+
+@if (clientes == null)
+{
+    <p>Cargando...</p>
+}
+else if (!clientes.Any())
+{
+    <p>No hay clientes registrados.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Dirección</th>
+                <th>Saldo deudor</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var c in clientes)
+            {
+                <tr class="@(c.SaldoDeudor > 0 ? "tiene-deuda" : "")">
+                    <td>@c.Nombre</td>
+                    <td>@(c.Telefono ?? "-")</td>
+                    <td>@(c.Direccion ?? "-")</td>
+                    <td class="@(c.SaldoDeudor > 0 ? "deuda-roja" : "")">
+                        $@c.SaldoDeudor
+                    </td>
+                    <td>
+                        <button class="btn-cuenta" @onclick="() => VerCuenta(c.Id)">📋 Cuenta</button>
+                        <button class="btn-editar" @onclick="() => Editar(c)">✏️</button>
+                        <button class="btn-eliminar" @onclick="() => Eliminar(c.Id)">🗑️</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (clienteSeleccionado != null)
+{
+    <div class="panel-cuenta">
+        <h4>📋 Cuenta corriente — @clienteSeleccionado.Nombre</h4>
+        <p class="saldo @(clienteSeleccionado.SaldoDeudor > 0 ? "deuda-roja" : "verde")">
+            Saldo deudor: <strong>$@clienteSeleccionado.SaldoDeudor</strong>
+        </p>
+
+        <div class="acciones-cuenta">
+            <div class="campo">
+                <label>Monto</label>
+                <input type="number" @bind="montoOperacion" min="0" />
+            </div>
+            <div class="campo">
+                <label>Descripción (opcional)</label>
+                <input @bind="descripcionOperacion" placeholder="Ej: Compra del día, pago parcial..." />
+            </div>
+            <div class="botones">
+                <button class="btn-deuda" @onclick="RegistrarDeuda">➕ Cargar deuda</button>
+                <button class="btn-pago" @onclick="RegistrarPago">💵 Registrar pago</button>
+            </div>
+        </div>
+
+        @if (movimientos.Any())
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Tipo</th>
+                        <th>Monto</th>
+                        <th>Descripción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var m in movimientos)
+                    {
+                        <tr class="@(m.Tipo == "deuda" ? "fila-deuda" : "fila-pago")">
+                            <td>@m.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@(m.Tipo == "deuda" ? "➕ Deuda" : "💵 Pago")</td>
+                            <td>$@m.Monto</td>
+                            <td>@(string.IsNullOrEmpty(m.Descripcion) ? "-" : m.Descripcion)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <p class="mensaje">@mensaje</p>
+}
+
+@code {
+    private List<ClienteDto>? clientes;
+    private ClienteDto clienteEditando = new();
+    private ClienteDto? clienteSeleccionado;
+    private List<MovimientoDto> movimientos = new();
+    private bool mostrarFormulario = false;
+    private string mensaje = string.Empty;
+    private decimal montoOperacion = 0;
+    private string descripcionOperacion = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarClientes();
+    }
+
+    private async Task CargarClientes()
+    {
+        var lista = await Http.GetFromJsonAsync<List<ClienteConSaldo>>("clientes") ?? new();
+        clientes = new List<ClienteDto>();
+
+        foreach (var c in lista)
+        {
+            var detalle = await Http.GetFromJsonAsync<ClienteConSaldo>($"clientes/{c.Id}");
+            if (detalle != null)
+            {
+                clientes.Add(new ClienteDto
+                {
+                    Id = detalle.Id,
+                    Nombre = detalle.Nombre,
+                    Telefono = detalle.Telefono,
+                    Direccion = detalle.Direccion,
+                    SaldoDeudor = detalle.SaldoDeudor
+                });
+            }
+        }
+    }
+
+    private void MostrarFormulario()
+    {
+        clienteEditando = new ClienteDto();
+        mostrarFormulario = true;
+        mensaje = string.Empty;
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormulario = false;
+        clienteEditando = new ClienteDto();
+    }
+
+    private void Editar(ClienteDto c)
+    {
+        clienteEditando = new ClienteDto
+        {
+            Id = c.Id,
+            Nombre = c.Nombre,
+            Telefono = c.Telefono,
+            Direccion = c.Direccion
+        };
+        mostrarFormulario = true;
+        mensaje = string.Empty;
+    }
+
+    private async Task GuardarCliente()
+    {
+        clienteEditando.Activo = true;
+
+        if (clienteEditando.Id == 0)
+        {
+            await Http.PostAsJsonAsync("clientes", clienteEditando);
+            mensaje = "Cliente creado correctamente.";
+        }
+        else
+        {
+            await Http.PutAsJsonAsync($"clientes/{clienteEditando.Id}", clienteEditando);
+            mensaje = "Cliente actualizado correctamente.";
+        }
+
+        mostrarFormulario = false;
+        await CargarClientes();
+    }
+
+    private async Task Eliminar(int id)
+    {
+        await Http.DeleteAsync($"clientes/{id}");
+        mensaje = "Cliente eliminado.";
+        clienteSeleccionado = null;
+        await CargarClientes();
+    }
+
+    private async Task VerCuenta(int id)
+    {
+        var detalle = await Http.GetFromJsonAsync<CuentaResponse>($"clientes/{id}/cuenta");
+        if (detalle != null)
+        {
+            clienteSeleccionado = clientes?.FirstOrDefault(c => c.Id == id);
+            if (clienteSeleccionado != null)
+                clienteSeleccionado.SaldoDeudor = detalle.SaldoDeudor;
+            movimientos = detalle.Movimientos;
+        }
+        montoOperacion = 0;
+        descripcionOperacion = string.Empty;
+    }
+
+    private async Task RegistrarDeuda()
+    {
+        if (clienteSeleccionado == null || montoOperacion <= 0) return;
+
+        var request = new { Monto = montoOperacion, Descripcion = descripcionOperacion };
+        await Http.PostAsJsonAsync($"clientes/{clienteSeleccionado.Id}/deuda", request);
+        mensaje = "Deuda registrada correctamente.";
+        await VerCuenta(clienteSeleccionado.Id);
+        await CargarClientes();
+    }
+
+    private async Task RegistrarPago()
+    {
+        if (clienteSeleccionado == null || montoOperacion <= 0) return;
+
+        var request = new { Monto = montoOperacion, Descripcion = descripcionOperacion };
+        await Http.PostAsJsonAsync($"clientes/{clienteSeleccionado.Id}/pago", request);
+        mensaje = "Pago registrado correctamente.";
+        await VerCuenta(clienteSeleccionado.Id);
+        await CargarClientes();
+    }
+
+    public class ClienteDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string? Telefono { get; set; }
+        public string? Direccion { get; set; }
+        public decimal SaldoDeudor { get; set; }
+        public bool Activo { get; set; } = true;
+    }
+
+    public class ClienteConSaldo
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string? Telefono { get; set; }
+        public string? Direccion { get; set; }
+        public decimal SaldoDeudor { get; set; }
+    }
+
+    public class CuentaResponse
+    {
+        public string Cliente { get; set; } = string.Empty;
+        public decimal SaldoDeudor { get; set; }
+        public List<MovimientoDto> Movimientos { get; set; } = new();
+    }
+
+    public class MovimientoDto
+    {
+        public int Id { get; set; }
+        public string Tipo { get; set; } = string.Empty;
+        public decimal Monto { get; set; }
+        public string? Descripcion { get; set; }
+        public DateTime Fecha { get; set; }
+    }
+}
+
+<style>
+    h3 { margin-bottom: 1rem; }
+    h4 { margin-top: 1.5rem; margin-bottom: 0.8rem; }
+
+    .btn-nuevo {
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-bottom: 1rem;
+    }
+
+    .formulario {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        max-width: 500px;
+    }
+
+    .campo {
+        margin-bottom: 0.8rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .campo label {
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+
+    .campo input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .botones {
+        display: flex;
+        gap: 10px;
+        margin-top: 1rem;
+    }
+
+    .btn-guardar {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .btn-cancelar {
+        background-color: #95a5a6;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    th, td {
+        padding: 10px 14px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th { background-color: #f4f4f4; font-weight: 600; }
+    tr:hover { background-color: #f9f9f9; }
+
+    .tiene-deuda { background-color: #fef9e7; }
+    .deuda-roja { color: #e74c3c; font-weight: bold; }
+    .verde { color: #27ae60; font-weight: bold; }
+
+    .btn-cuenta {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        margin-right: 4px;
+    }
+
+    .btn-editar, .btn-eliminar {
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 4px;
+    }
+
+    .panel-cuenta {
+        background: #f9f9f9;
+        border: 2px solid #3498db;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-top: 1.5rem;
+    }
+
+    .saldo { font-size: 16px; margin-bottom: 1rem; }
+
+    .acciones-cuenta {
+        background: white;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .btn-deuda {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .btn-pago {
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .fila-deuda { background-color: #fdecea; }
+    .fila-pago { background-color: #eafaf1; }
+
+    .mensaje {
+        margin-top: 1rem;
+        font-weight: 600;
+        color: #27ae60;
+    }
+</style>

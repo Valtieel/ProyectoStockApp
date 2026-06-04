@@ -75,6 +75,67 @@ namespace StockApp.Data.Migrations
                     b.ToTable("Categorias");
                 });
 
+            modelBuilder.Entity("StockApp.Core.Entities.Cliente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Direccion")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("FechaCreacion")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Telefono")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Clientes");
+                });
+
+            modelBuilder.Entity("StockApp.Core.Entities.CuentaCorriente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClienteId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Descripcion")
+                        .HasColumnType("longtext");
+
+                    b.Property<DateTime>("Fecha")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<decimal>("Monto")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("decimal(10,2)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClienteId");
+
+                    b.ToTable("CuentaCorrientes");
+                });
+
             modelBuilder.Entity("StockApp.Core.Entities.DetalleVenta", b =>
                 {
                     b.Property<int>("Id")
@@ -250,6 +311,17 @@ namespace StockApp.Data.Migrations
                     b.ToTable("Ventas");
                 });
 
+            modelBuilder.Entity("StockApp.Core.Entities.CuentaCorriente", b =>
+                {
+                    b.HasOne("StockApp.Core.Entities.Cliente", "Cliente")
+                        .WithMany("CuentasCOrrientes")
+                        .HasForeignKey("ClienteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
+                });
+
             modelBuilder.Entity("StockApp.Core.Entities.DetalleVenta", b =>
                 {
                     b.HasOne("StockApp.Core.Entities.Producto", "Producto")
@@ -308,6 +380,11 @@ namespace StockApp.Data.Migrations
             modelBuilder.Entity("StockApp.Core.Entities.Categoria", b =>
                 {
                     b.Navigation("Productos");
+                });
+
+            modelBuilder.Entity("StockApp.Core.Entities.Cliente", b =>
+                {
+                    b.Navigation("CuentasCOrrientes");
                 });
 
             modelBuilder.Entity("StockApp.Core.Entities.Producto", b =>
