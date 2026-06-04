@@ -89,7 +89,7 @@ public async Task<IActionResult> GetResumenHoy()
 
         //ventas por hoy
         var ventas = await _context.Ventas
-        .Where(v => v.Fecha.Date == hoy)
+        .Where(v => v.Fecha.Year == hoy.Year && v.Fecha.Month == hoy.Month && v.Fecha.Day == hoy.Day)
         .ToListAsync();
 
         var totalHoy = ventas.Sum(v => v.Total);
@@ -115,19 +115,19 @@ public async Task<IActionResult> GetResumenHoy()
         && p.FechaVencimiento.Value <= hoy.AddDays(30));
 
         //total productos
-        var totalProdcutos = await _context.Productos
+        var totalProductos = await _context.Productos
         .CountAsync(p => p.Activo);
 
         return Ok(new
-        {
-            Fecha = hoy,
-            TotalVentasHoy = totalHoy,
-            CantidadVentasHoy = cantidadHoy,
-            CajaAbierta = cajaAbierta,
-            StockBajo = stockBajo,
-            Venncidos = vencidos,
-            PorVencer = porVencer,
-            totalProdcutos = totalProdcutos
-        });  
+{
+    Fecha = hoy,
+    TotalVentasHoy = totalHoy,
+    CantidadVentasHoy = cantidadHoy,
+    CajaAbierta = cajaAbierta,
+    StockBajo = stockBajo,
+    Vencidos = vencidos,
+    PorVencer = porVencer,
+    TotalProductos = totalProductos
+});
     }
 }

@@ -2,7 +2,7 @@
 @inject HttpClient Http
 
 <h3>🏠 Inicio</h3>
-
+<button class="btn-refrescar" @onclick="CargarResumen">🔄 Actualizar</button>
 @if (cargando)
 {
     <p>Cargando...</p>
@@ -77,12 +77,17 @@ else if (resumen != null)
 @code {
     private ResumenHoy? resumen;
     private bool cargando = true;
+    private async Task CargarResumen()
+{
+    cargando = true;
+    resumen = await Http.GetFromJsonAsync<ResumenHoy>("balance/hoy");
+    cargando = false;
+}
 
     protected override async Task OnInitializedAsync()
-    {
-        resumen = await Http.GetFromJsonAsync<ResumenHoy>("balance/hoy");
-        cargando = false;
-    }
+{
+    await CargarResumen();
+}
 
     public class ResumenHoy
     {
@@ -174,6 +179,16 @@ else if (resumen != null)
         text-decoration: none;
         text-align: center;
     }
+
+    .btn-refrescar {
+    background: none;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-bottom: 1rem;
+}
 
     .btn-acceso.verde  { background-color: #2ecc71; color: white; }
     .btn-acceso.azul   { background-color: #3498db; color: white; }
