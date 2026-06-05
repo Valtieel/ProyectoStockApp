@@ -17,6 +17,9 @@ public class Producto
     public int? CategoriaId {get; set;}
     public Categoria? Categoria{get; set;}
 
+    public int? ProveedorId { get; set; }
+public Proveedor? Proveedor { get; set; }
+
     public ICollection<Movimiento> Movimientos{get; set;} = new List<Movimiento>();
     public ICollection<DetalleVenta> DetallesVenta{get; set; } = new List<DetalleVenta>();
 

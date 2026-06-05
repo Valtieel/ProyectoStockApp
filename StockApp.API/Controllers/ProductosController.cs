@@ -17,31 +17,34 @@ public class ProductosController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+public async Task<IActionResult> GetAll()
+{
+    var productos = await _context.Productos
+        .Include(p => p.Categoria)
+        .Include(p => p.Proveedor)
+        .Where(p => p.Activo)
+        .ToListAsync();
+
+    var resultado = productos.Select(p => new
     {
-        var productos = await _context.Productos
-            .Include(p => p.Categoria)
-            .Where(p => p.Activo)
-            .ToListAsync();
+        p.Id,
+        p.Nombre,
+        p.Descripcion,
+        p.CategoriaId,
+        CategoriaNombre = p.Categoria != null ? p.Categoria.Nombre : null,
+        p.ProveedorId,
+        ProveedorNombre = p.Proveedor != null ? p.Proveedor.Nombre : null,
+        p.PrecioVenta,
+        p.Costo,
+        p.StockActual,
+        p.StockMinimo,
+        p.FechaVencimiento,
+        p.Activo,
+        p.FechaCreacion
+    });
 
-        var resultado = productos.Select(p => new
-        {
-            p.Id,
-            p.Nombre,
-            p.Descripcion,
-            p.CategoriaId,
-            CategoriaNombre = p.Categoria != null ? p.Categoria.Nombre : null,
-            p.PrecioVenta,
-            p.Costo,
-            p.StockActual,
-            p.StockMinimo,
-            p.FechaVencimiento,
-            p.Activo,
-            p.FechaCreacion
-        });
-
-        return Ok(resultado);
-    }
+    return Ok(resultado);
+}
 
     // GET api/productos/eliminados
     // Tiene que estar ANTES de GetById para que el router no lo confunda

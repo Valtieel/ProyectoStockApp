@@ -1,0 +1,266 @@
+@page "/proveedores"
+@inject HttpClient Http
+
+<h3>🏭 Proveedores</h3>
+
+<button class="btn-nuevo" @onclick="MostrarFormulario">+ Nuevo Proveedor</button>
+
+@if (mostrarFormulario)
+{
+    <div class="formulario">
+        <h4>@(proveedorEditando.Id == 0 ? "Nuevo Proveedor" : "Editar Proveedor")</h4>
+        <div class="campo">
+            <label>Nombre</label>
+            <input @bind="proveedorEditando.Nombre" placeholder="Nombre del proveedor" />
+        </div>
+        <div class="campo">
+            <label>Teléfono (opcional)</label>
+            <input @bind="proveedorEditando.Telefono" placeholder="Ej: 3464987654" />
+        </div>
+        <div class="campo">
+            <label>Email (opcional)</label>
+            <input @bind="proveedorEditando.Email" placeholder="Ej: proveedor@mail.com" />
+        </div>
+        <div class="campo">
+            <label>Dirección (opcional)</label>
+            <input @bind="proveedorEditando.Direccion" placeholder="Ej: Av. San Martín 456" />
+        </div>
+        <div class="campo">
+            <label>Notas (opcional)</label>
+            <input @bind="proveedorEditando.Notas" placeholder="Ej: Entrega los martes" />
+        </div>
+        <div class="botones">
+            <button class="btn-guardar" @onclick="GuardarProveedor">💾 Guardar</button>
+            <button class="btn-cancelar" @onclick="CancelarFormulario">Cancelar</button>
+        </div>
+    </div>
+}
+
+@if (proveedores == null)
+{
+    <p>Cargando...</p>
+}
+else if (!proveedores.Any())
+{
+    <p>No hay proveedores registrados.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Teléfono</th>
+                <th>Email</th>
+                <th>Dirección</th>
+                <th>Notas</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in proveedores)
+            {
+                <tr>
+                    <td>@p.Nombre</td>
+                    <td>@(p.Telefono ?? "-")</td>
+                    <td>@(p.Email ?? "-")</td>
+                    <td>@(p.Direccion ?? "-")</td>
+                    <td>@(p.Notas ?? "-")</td>
+                    <td>
+                        <button class="btn-editar" @onclick="() => Editar(p)">✏️</button>
+                        <button class="btn-eliminar" @onclick="() => Eliminar(p.Id)">🗑️</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <p class="mensaje">@mensaje</p>
+}
+
+@code {
+    private List<ProveedorDto>? proveedores;
+    private ProveedorDto proveedorEditando = new();
+    private bool mostrarFormulario = false;
+    private string mensaje = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarProveedores();
+    }
+
+    private async Task CargarProveedores()
+    {
+        proveedores = await Http.GetFromJsonAsync<List<ProveedorDto>>("proveedores");
+    }
+
+    private void MostrarFormulario()
+    {
+        proveedorEditando = new ProveedorDto();
+        mostrarFormulario = true;
+        mensaje = string.Empty;
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormulario = false;
+        proveedorEditando = new ProveedorDto();
+    }
+
+    private void Editar(ProveedorDto p)
+    {
+        proveedorEditando = new ProveedorDto
+        {
+            Id = p.Id,
+            Nombre = p.Nombre,
+            Telefono = p.Telefono,
+            Email = p.Email,
+            Direccion = p.Direccion,
+            Notas = p.Notas
+        };
+        mostrarFormulario = true;
+        mensaje = string.Empty;
+    }
+
+    private async Task GuardarProveedor()
+    {
+        proveedorEditando.Activo = true;
+
+        if (proveedorEditando.Id == 0)
+        {
+            await Http.PostAsJsonAsync("proveedores", proveedorEditando);
+            mensaje = "Proveedor creado correctamente.";
+        }
+        else
+        {
+            await Http.PutAsJsonAsync($"proveedores/{proveedorEditando.Id}", proveedorEditando);
+            mensaje = "Proveedor actualizado correctamente.";
+        }
+
+        mostrarFormulario = false;
+        await CargarProveedores();
+    }
+
+    private async Task Eliminar(int id)
+    {
+        await Http.DeleteAsync($"proveedores/{id}");
+        mensaje = "Proveedor eliminado.";
+        await CargarProveedores();
+    }
+
+    public class ProveedorDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string? Telefono { get; set; }
+        public string? Email { get; set; }
+        public string? Direccion { get; set; }
+        public string? Notas { get; set; }
+        public bool Activo { get; set; } = true;
+    }
+}
+
+<style>
+    h3 { margin-bottom: 1rem; }
+
+    .btn-nuevo {
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-bottom: 1rem;
+    }
+
+    .formulario {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        max-width: 500px;
+    }
+
+    .campo {
+        margin-bottom: 0.8rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .campo label {
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+
+    .campo input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .botones {
+        display: flex;
+        gap: 10px;
+        margin-top: 1rem;
+    }
+
+    .btn-guardar {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .btn-cancelar {
+        background-color: #95a5a6;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    th, td {
+        padding: 10px 14px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th {
+        background-color: #f4f4f4;
+        font-weight: 600;
+    }
+
+    tr:hover { background-color: #f9f9f9; }
+
+    .btn-editar, .btn-eliminar {
+        border: none;
+        background: none;
+        cursor: pointer;
+        font-size: 18px;
+        padding: 4px;
+    }
+
+    .mensaje {
+        margin-top: 1rem;
+        font-weight: 600;
+        color: #27ae60;
+    }
+</style>

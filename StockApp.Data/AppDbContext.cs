@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<Usuario> Usuarios {get; set;}
     public DbSet<Cliente> Clientes{get; set;}
     public DbSet<CuentaCorriente> CuentaCorrientes {get; set;}
+    public DbSet<Proveedor> Proveedores {get; set;}
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
