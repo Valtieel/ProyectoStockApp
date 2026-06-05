@@ -123,6 +123,45 @@ public class AuthController : ControllerBase
             return new JwtSecurityTokenHandler().WriteToken(token);    
     }
 
+    // GET api/auth/usuarios
+// Devuelve todos los usuarios
+[HttpGet("usuarios")]
+public async Task<IActionResult> GetUsuarios()
+{
+    var usuarios = await _context.Usuarios
+        .Select(u => new
+        {
+            u.Id,
+            u.Nombre,
+            u.Email,
+            u.Rol,
+            u.Activo,
+            u.FechaCreacion
+        })
+        .OrderBy(u => u.Nombre)
+        .ToListAsync();
+
+    return Ok(usuarios);
+}
+
+// PUT api/auth/usuarios/{id}/toggle
+// Activa o desactiva un usuario
+[HttpPut("usuarios/{id}/toggle")]
+public async Task<IActionResult> ToggleUsuario(int id)
+{
+    var usuario = await _context.Usuarios.FindAsync(id);
+    if (usuario == null) return NotFound();
+
+    usuario.Activo = !usuario.Activo;
+    await _context.SaveChangesAsync();
+
+    return Ok(new
+    {
+        Mensaje = $"Usuario {usuario.Nombre} {(usuario.Activo ? "activado" : "desactivado")} correctamente.",
+        Activo = usuario.Activo
+    });
+}
+
     public class LoginRequest
     {
         public string Email {get; set;} = string.Empty;

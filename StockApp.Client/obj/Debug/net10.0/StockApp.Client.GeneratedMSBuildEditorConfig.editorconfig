@@ -93,6 +93,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcUmVwb3J0ZXMucmF6b3I=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/Lutho/OneDrive/Escritorio/ProyectoStockApp/StockApp.Client/Pages/Usuarios.razor]
+build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVXN1YXJpb3MucmF6b3I=
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/Lutho/OneDrive/Escritorio/ProyectoStockApp/StockApp.Client/Pages/Ventas.razor]
 build_metadata.AdditionalFiles.TargetPath = UGFnZXNcVmVudGFzLnJhem9y
 build_metadata.AdditionalFiles.CssScope = 

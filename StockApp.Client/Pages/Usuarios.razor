@@ -1,0 +1,306 @@
+@page "/usuarios"
+@inject HttpClient Http
+
+<h3>👤 Usuarios</h3>
+
+<button class="btn-nuevo" @onclick="MostrarFormulario">+ Nuevo Usuario</button>
+
+@if (mostrarFormulario)
+{
+    <div class="formulario">
+        <h4>Nuevo Usuario</h4>
+        <div class="campo">
+            <label>Nombre</label>
+            <input @bind="nuevoUsuario.Nombre" placeholder="Nombre completo" />
+        </div>
+        <div class="campo">
+            <label>Email</label>
+            <input type="email" @bind="nuevoUsuario.Email" placeholder="email@ejemplo.com" />
+        </div>
+        <div class="campo">
+            <label>Contraseña</label>
+            <input type="password" @bind="nuevoUsuario.Password" placeholder="••••••••" />
+        </div>
+        <div class="campo">
+            <label>Rol</label>
+            <select @bind="nuevoUsuario.Rol">
+                <option value="empleado">Empleado</option>
+                <option value="admin">Administrador</option>
+            </select>
+        </div>
+        <div class="botones">
+            <button class="btn-guardar" @onclick="CrearUsuario">💾 Guardar</button>
+            <button class="btn-cancelar" @onclick="CancelarFormulario">Cancelar</button>
+        </div>
+    </div>
+}
+
+@if (usuarios == null)
+{
+    <p>Cargando...</p>
+}
+else if (!usuarios.Any())
+{
+    <p>No hay usuarios registrados.</p>
+}
+else
+{
+    <table>
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Rol</th>
+                <th>Estado</th>
+                <th>Fecha creación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in usuarios)
+            {
+                <tr class="@(!u.Activo ? "inactivo" : "")">
+                    <td>@u.Nombre</td>
+                    <td>@u.Email</td>
+                    <td>
+                        <span class="badge @(u.Rol == "admin" ? "badge-admin" : "badge-empleado")">
+                            @u.Rol
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge @(u.Activo ? "badge-activo" : "badge-inactivo")">
+                            @(u.Activo ? "Activo" : "Inactivo")
+                        </span>
+                    </td>
+                    <td>@u.FechaCreacion.ToString("dd/MM/yyyy")</td>
+                    <td>
+                        <button class="@(u.Activo ? "btn-desactivar" : "btn-activar")"
+                                @onclick="() => ToggleUsuario(u.Id)">
+                            @(u.Activo ? "🔒 Desactivar" : "🔓 Activar")
+                        </button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <p class="mensaje">@mensaje</p>
+}
+
+@code {
+    private List<UsuarioDto>? usuarios;
+    private NuevoUsuarioForm nuevoUsuario = new();
+    private bool mostrarFormulario = false;
+    private string mensaje = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarUsuarios();
+    }
+
+    private async Task CargarUsuarios()
+    {
+        usuarios = await Http.GetFromJsonAsync<List<UsuarioDto>>("auth/usuarios");
+    }
+
+    private void MostrarFormulario()
+    {
+        nuevoUsuario = new NuevoUsuarioForm();
+        mostrarFormulario = true;
+        mensaje = string.Empty;
+    }
+
+    private void CancelarFormulario()
+    {
+        mostrarFormulario = false;
+        nuevoUsuario = new NuevoUsuarioForm();
+    }
+
+    private async Task CrearUsuario()
+    {
+        if (string.IsNullOrEmpty(nuevoUsuario.Nombre) ||
+            string.IsNullOrEmpty(nuevoUsuario.Email) ||
+            string.IsNullOrEmpty(nuevoUsuario.Password))
+        {
+            mensaje = "Completá todos los campos obligatorios.";
+            return;
+        }
+
+        var request = new
+        {
+            nuevoUsuario.Nombre,
+            nuevoUsuario.Email,
+            nuevoUsuario.Password,
+            nuevoUsuario.Rol
+        };
+
+        var response = await Http.PostAsJsonAsync("auth/registro", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            mensaje = "Usuario creado correctamente.";
+            mostrarFormulario = false;
+            await CargarUsuarios();
+        }
+        else
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            mensaje = $"Error: {error}";
+        }
+    }
+
+    private async Task ToggleUsuario(int id)
+    {
+        var response = await Http.PutAsJsonAsync($"auth/usuarios/{id}/toggle", new { });
+
+        if (response.IsSuccessStatusCode)
+        {
+            await CargarUsuarios();
+        }
+    }
+
+    public class UsuarioDto
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Rol { get; set; } = string.Empty;
+        public bool Activo { get; set; }
+        public DateTime FechaCreacion { get; set; }
+    }
+
+    public class NuevoUsuarioForm
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Password { get; set; } = string.Empty;
+        public string Rol { get; set; } = "empleado";
+    }
+}
+
+<style>
+    h3 { margin-bottom: 1rem; }
+
+    .btn-nuevo {
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-bottom: 1rem;
+    }
+
+    .formulario {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+        max-width: 500px;
+    }
+
+    .campo {
+        margin-bottom: 0.8rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .campo label {
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+
+    .campo input, .campo select {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .botones {
+        display: flex;
+        gap: 10px;
+        margin-top: 1rem;
+    }
+
+    .btn-guardar {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .btn-cancelar {
+        background-color: #95a5a6;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    th, td {
+        padding: 10px 14px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th { background-color: #f4f4f4; font-weight: 600; }
+    tr:hover { background-color: #f9f9f9; }
+
+    .inactivo { opacity: 0.5; }
+
+    .badge {
+        padding: 4px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-admin { background-color: #fdecea; color: #e74c3c; }
+    .badge-empleado { background-color: #eaf4fb; color: #3498db; }
+    .badge-activo { background-color: #eafaf1; color: #27ae60; }
+    .badge-inactivo { background-color: #f4f4f4; color: #95a5a6; }
+
+    .btn-desactivar {
+        background-color: #e74c3c;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .btn-activar {
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+
+    .mensaje {
+        margin-top: 1rem;
+        font-weight: 600;
+        color: #27ae60;
+    }
+</style>
