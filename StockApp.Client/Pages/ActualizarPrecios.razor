@@ -1,6 +1,6 @@
 @page "/actualizar-precios"
 @inject HttpClient Http
-
+<AdminOnly>
 <h3>💲 Actualizar Precios</h3>
 
 <div class="panel">
@@ -56,6 +56,7 @@
 {
     <p class="mensaje">@mensaje</p>
 }
+</AdminOnly>
 
 @code {
     private List<ProductoDto> productos = new();

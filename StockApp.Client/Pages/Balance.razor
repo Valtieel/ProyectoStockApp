@@ -1,6 +1,6 @@
 @page "/balance"
 @inject HttpClient Http
-
+<AdminOnly>
 <h3>📊 Balance Mensual</h3>
 
 <div class="panel">
@@ -102,7 +102,7 @@ else if (balance != null)
         </table>
     }
 }
-
+</AdminOnly>
 @code {
     private int año = DateTime.Now.Year;
     private int mes = DateTime.Now.Month;

@@ -1,6 +1,7 @@
 @page "/usuarios"
 @inject HttpClient Http
 
+<AdminOnly>
 <h3>👤 Usuarios</h3>
 
 <button class="btn-nuevo" @onclick="MostrarFormulario">+ Nuevo Usuario</button>
@@ -89,7 +90,7 @@ else
 {
     <p class="mensaje">@mensaje</p>
 }
-
+</AdminOnly>
 @code {
     private List<UsuarioDto>? usuarios;
     private NuevoUsuarioForm nuevoUsuario = new();

@@ -1,6 +1,6 @@
 @page "/ofertas"
 @inject HttpClient Http
-
+<AdminOnly>
 <h3>🏷️ Ofertas y Descuentos</h3>
 
 <div class="panel">
@@ -90,6 +90,8 @@
         }
     </tbody>
 </table>
+
+</AdminOnly>
 
 @code {
     private List<ProductoDto> productos = new();

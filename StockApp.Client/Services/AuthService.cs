@@ -27,7 +27,7 @@ public class AuthService
     //obtiene el token del localStorage
     public async Task<string?> ObtenerToken()
     {
-        return await _js.InvokeAsync<string?>("localStorage.removeItem","token");
+        return await _js.InvokeAsync<string?>("localStorage.getItem", "token");
     }
 
     //elimina el token (logout)

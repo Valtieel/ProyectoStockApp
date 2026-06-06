@@ -1,6 +1,6 @@
 @page "/categorias"
 @inject HttpClient Http
-
+<AdminOnly>
 <h3>🗂️ Categorías</h3>
 
 <button class="btn-nuevo" @onclick="MostrarFormulario">+ Nueva Categoría</button>
@@ -62,7 +62,7 @@ else
 {
     <p class="mensaje">@mensaje</p>
 }
-
+</AdminOnly>
 @code {
     private List<CategoriaDto>? categorias;
     private CategoriaDto categoriaEditando = new();

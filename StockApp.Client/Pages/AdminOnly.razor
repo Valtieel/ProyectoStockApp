@@ -1,0 +1,59 @@
+@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else if (autorizado)
+{
+    @ChildContent
+}
+else
+{
+    <p>No tenés permisos para ver esta página.</p>
+}
+
+@code {
+    [Parameter]
+    public RenderFragment? ChildContent { get; set; }
+
+    private bool autorizado = false;
+    private bool cargando = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        try
+        {
+            await Task.Delay(100);
+            var token = await JS.InvokeAsync<string?>("localStorage.getItem", "token");
+            
+            if (!string.IsNullOrEmpty(token))
+            {
+                var partes = token.Split('.');
+                if (partes.Length == 3)
+                {
+                    var payload = partes[1];
+                    payload = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
+                    var bytes = Convert.FromBase64String(payload);
+                    var json = System.Text.Encoding.UTF8.GetString(bytes);
+                    var datos = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, System.Text.Json.JsonElement>>(json);
+
+                    var roleKey = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+                    if (datos != null && datos.ContainsKey(roleKey))
+                    {
+                        var rol = datos[roleKey].GetString();
+                        if (rol == "admin")
+                            autorizado = true;
+                    }
+                }
+            }
+        }
+        catch { }
+
+        cargando = false;
+        StateHasChanged();
+    }
+}

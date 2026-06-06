@@ -10,9 +10,10 @@
 </Router>
 
 @code {
-    protected override async Task OnInitializedAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // Cargamos el token al iniciar la app
+        if (!firstRender) return;
+
         await Auth.CargarToken();
 
         var uri = Nav.Uri;

@@ -1,6 +1,8 @@
 @page "/proveedores"
 @inject HttpClient Http
 
+<AdminOnly>
+
 <h3>🏭 Proveedores</h3>
 
 <button class="btn-nuevo" @onclick="MostrarFormulario">+ Nuevo Proveedor</button>
@@ -80,6 +82,8 @@ else
 {
     <p class="mensaje">@mensaje</p>
 }
+
+</AdminOnly>
 
 @code {
     private List<ProveedorDto>? proveedores;
