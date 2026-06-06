@@ -1,4 +1,5 @@
 @page "/productos"
+@inject IJSRuntime JS
 @inject HttpClient Http
 
 <h3>📦 Productos</h3>
@@ -238,13 +239,15 @@ else
         await CargarProductos();
     }
 
-    private async Task Eliminar(int id)
-    {
-        await Http.DeleteAsync($"productos/{id}");
-        mensaje = "Producto eliminado.";
-        await CargarProductos();
-    }
+   private async Task Eliminar(int id)
+{
+    var confirmado = await JS.InvokeAsync<bool>("confirm", "¿Seguro que querés eliminar este producto?");
+    if (!confirmado) return;
 
+    await Http.DeleteAsync($"productos/{id}");
+    mensaje = "Producto eliminado.";
+    await CargarProductos();
+}
     public class Producto
     {
         public int Id { get; set; }

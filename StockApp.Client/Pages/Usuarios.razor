@@ -1,6 +1,6 @@
 @page "/usuarios"
 @inject HttpClient Http
-
+@inject IJSRuntime JS
 <AdminOnly>
 <h3>👤 Usuarios</h3>
 
@@ -153,17 +153,21 @@ else
         }
     }
 
-    private async Task ToggleUsuario(int id)
+  private async Task ToggleUsuario(int id)
+{
+    var usuario = usuarios?.FirstOrDefault(u => u.Id == id);
+    if (usuario == null) return;
+
+    var accion = usuario.Activo ? "desactivar" : "activar";
+    var confirmado = await JS.InvokeAsync<bool>("confirm", $"¿Seguro que querés {accion} este usuario?");
+    if (!confirmado) return;
+
+    var response = await Http.PutAsJsonAsync($"auth/usuarios/{id}/toggle", new { });
+    if (response.IsSuccessStatusCode)
     {
-        var response = await Http.PutAsJsonAsync($"auth/usuarios/{id}/toggle", new { });
-
-        if (response.IsSuccessStatusCode)
-        {
-            await CargarUsuarios();
-        }
+        await CargarUsuarios();
     }
-
-    public class UsuarioDto
+}    public class UsuarioDto
     {
         public int Id { get; set; }
         public string Nombre { get; set; } = string.Empty;

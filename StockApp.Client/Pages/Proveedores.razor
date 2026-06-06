@@ -1,5 +1,6 @@
 @page "/proveedores"
 @inject HttpClient Http
+@inject IJSRuntime JS
 
 <AdminOnly>
 
@@ -148,12 +149,15 @@ else
         await CargarProveedores();
     }
 
-    private async Task Eliminar(int id)
-    {
-        await Http.DeleteAsync($"proveedores/{id}");
-        mensaje = "Proveedor eliminado.";
-        await CargarProveedores();
-    }
+  private async Task Eliminar(int id)
+{
+    var confirmado = await JS.InvokeAsync<bool>("confirm", "¿Seguro que querés eliminar este proveedor?");
+    if (!confirmado) return;
+
+    await Http.DeleteAsync($"proveedores/{id}");
+    mensaje = "Proveedor eliminado.";
+    await CargarProveedores();
+}
 
     public class ProveedorDto
     {

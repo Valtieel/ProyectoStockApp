@@ -1,4 +1,5 @@
 @page "/clientes"
+@inject IJSRuntime JS
 @inject HttpClient Http
 
 <h3>👥 Clientes</h3>
@@ -206,14 +207,16 @@ else
         await CargarClientes();
     }
 
-    private async Task Eliminar(int id)
-    {
-        await Http.DeleteAsync($"clientes/{id}");
-        mensaje = "Cliente eliminado.";
-        clienteSeleccionado = null;
-        await CargarClientes();
-    }
+   private async Task Eliminar(int id)
+{
+    var confirmado = await JS.InvokeAsync<bool>("confirm", "¿Seguro que querés eliminar este cliente?");
+    if (!confirmado) return;
 
+    await Http.DeleteAsync($"clientes/{id}");
+    mensaje = "Cliente eliminado.";
+    clienteSeleccionado = null;
+    await CargarClientes();
+}
     private async Task VerCuenta(int id)
     {
         var detalle = await Http.GetFromJsonAsync<CuentaResponse>($"clientes/{id}/cuenta");
