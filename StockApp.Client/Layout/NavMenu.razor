@@ -1,4 +1,7 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@inject IJSRuntime JS
+@inject NavigationManager Nav
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">📦 StockApp</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -9,6 +12,11 @@
 
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="nav flex-column">
+        <div class="nav-user">
+            <span>👤 @nombreUsuario</span>
+            <span class="rol-badge @(rol == "admin" ? "admin" : "empleado")">@rol</span>
+        </div>
+
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 🏠 Inicio
@@ -17,16 +25,6 @@
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="productos">
                 📦 Productos
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categorias">
-                🗂️ Categorías
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="proveedores">
-                🏭 Proveedores
             </NavLink>
         </div>
         <div class="nav-item px-3">
@@ -54,36 +52,58 @@
                 🚨 Alertas
             </NavLink>
         </div>
+
+        @if (rol == "admin")
+        {
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="categorias">
+                    🗂️ Categorías
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="proveedores">
+                    🏭 Proveedores
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="actualizar-precios">
+                    💲 Precios
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="ofertas">
+                    🏷️ Ofertas
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="balance">
+                    📊 Balance
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="reportes">
+                    📥 Reportes
+                </NavLink>
+            </div>
+            <div class="nav-item px-3">
+                <NavLink class="nav-link" href="usuarios">
+                    👤 Usuarios
+                </NavLink>
+            </div>
+        }
+
         <div class="nav-item px-3">
-            <NavLink class="nav-link" href="actualizar-precios">
-                💲 Precios
-            </NavLink>
+            <button class="btn-logout" @onclick="CerrarSesion">
+                🚪 Cerrar sesión
+            </button>
         </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="ofertas">
-                🏷️ Ofertas
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="balance">
-                📊 Balance
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="reportes">
-                📥 Reportes
-            </NavLink>
-        </div>
-         <div class="nav-item px-3">
-             <NavLink class="nav-link" href="usuarios">
-                👤 Usuarios
-             </NavLink>
-    </div>
     </nav>
 </div>
 
 @code {
     private bool collapseNavMenu = true;
+    private string nombreUsuario = string.Empty;
+    private string rol = string.Empty;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
@@ -91,4 +111,79 @@
     {
         collapseNavMenu = !collapseNavMenu;
     }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            var token = await JS.InvokeAsync<string?>("localStorage.getItem", "token");
+            if (!string.IsNullOrEmpty(token))
+            {
+                var partes = token.Split('.');
+                if (partes.Length == 3)
+                {
+                    var payload = partes[1];
+                    payload = payload.PadRight(payload.Length + (4 - payload.Length % 4) % 4, '=');
+                    var bytes = Convert.FromBase64String(payload);
+                    var json = System.Text.Encoding.UTF8.GetString(bytes);
+                    var datos = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, System.Text.Json.JsonElement>>(json);
+
+                    var nameKey = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name";
+                    var roleKey = "http://schemas.microsoft.com/ws/2008/06/identity/claims/role";
+
+                    if (datos != null)
+                    {
+                        if (datos.ContainsKey(nameKey))
+                            nombreUsuario = datos[nameKey].GetString() ?? string.Empty;
+                        if (datos.ContainsKey(roleKey))
+                            rol = datos[roleKey].GetString() ?? string.Empty;
+                    }
+                }
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task CerrarSesion()
+    {
+        await JS.InvokeVoidAsync("localStorage.removeItem", "token");
+        Nav.NavigateTo("/login");
+    }
 }
+
+<style>
+    .nav-user {
+        padding: 10px 16px;
+        color: white;
+        font-size: 14px;
+        border-bottom: 1px solid rgba(255,255,255,0.2);
+        margin-bottom: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .rol-badge {
+        font-size: 11px;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-weight: 600;
+        width: fit-content;
+    }
+
+    .rol-badge.admin { background-color: #e74c3c; color: white; }
+    .rol-badge.empleado { background-color: #3498db; color: white; }
+
+    .btn-logout {
+        background: none;
+        border: 1px solid rgba(255,255,255,0.3);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        width: 100%;
+        text-align: left;
+        margin-top: 8px;
+    }
+</style>
