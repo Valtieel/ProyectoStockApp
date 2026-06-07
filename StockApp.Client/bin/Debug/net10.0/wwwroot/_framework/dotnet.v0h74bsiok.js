@@ -5,7 +5,7 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
   "mainAssemblyName": "StockApp.Client",
   "applicationEnvironment": "Development",
   "resources": {
-    "hash": "sha256-XRoT9Y7z04bdCamVi+rXB7vfSuHUVCrwy9lQAFeX0rg=",
+    "hash": "sha256-UwgvG/wuOxMxXc5U9d6yCgZyqaB21T1My8dELQnYLd8=",
     "jsModuleNative": [
       {
         "name": "dotnet.native.rjbmzc4jpg.js"
@@ -1248,16 +1248,16 @@ var e=!1;const t=async()=>WebAssembly.validate(new Uint8Array([0,97,115,109,1,0,
       },
       {
         "virtualPath": "StockApp.Client.wasm",
-        "name": "StockApp.Client.8mtb09uymu.wasm",
-        "hash": "sha256-sI5ehgccgngm9eijmDQlWN+s1N7FhCIM468sroa8/ZM=",
+        "name": "StockApp.Client.vuxucfw8mi.wasm",
+        "hash": "sha256-5y7bsdoSKVRK5dk7YIvqqB24ZHPS8nDYZHCJd7UmqIs=",
         "cache": "force-cache"
       }
     ],
     "pdb": [
       {
         "virtualPath": "StockApp.Client.pdb",
-        "name": "StockApp.Client.uyf3wohtrq.pdb",
-        "hash": "sha256-lkNG/i+ortl6KpFrwTK3KKIzcwbbRfnhHCMgqXkMxow=",
+        "name": "StockApp.Client.6wi7266rqo.pdb",
+        "hash": "sha256-ZpXt4E35Clh/6svsRd1ZqOq2WBgrNDN5cgVrZgFvS0o=",
         "cache": "force-cache"
       }
     ],

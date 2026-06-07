@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using StockApp.Core.Entities;
@@ -161,6 +162,27 @@ public async Task<IActionResult> ToggleUsuario(int id)
         Activo = usuario.Activo
     });
 }
+// PUT api/auth/cambiar-password
+// Cambia la contraseña del usuario logueado
+[HttpPut("cambiar-password")]
+public async Task<IActionResult> CambiarPassword([FromBody] CambiarPasswordRequest request)
+{
+    var usuario = await _context.Usuarios
+        .FirstOrDefaultAsync(u => u.Email == request.Email && u.Activo);
+
+    if (usuario == null)
+        return NotFound("Usuario no encontrado.");
+
+    // Verificamos la contraseña actual
+    if (!VerificarPassword(request.PasswordActual, usuario.PasswordHash))
+        return BadRequest("La contraseña actual es incorrecta.");
+
+    // Actualizamos la contraseña
+    usuario.PasswordHash = HashPassword(request.PasswordNueva);
+    await _context.SaveChangesAsync();
+
+    return Ok(new { Mensaje = "Contraseña actualizada correctamente." });
+}
 
     public class LoginRequest
     {
@@ -174,5 +196,12 @@ public async Task<IActionResult> ToggleUsuario(int id)
         public string Email {get; set;} = string.Empty;
         public string Password {get; set;} = string.Empty;
         public string Rol {get; set;} = "empleado";
+    }
+
+    public class CambiarPasswordRequest
+    {
+        public string Email {get; set;} = string.Empty;
+        public string PasswordActual {get; set;} = string.Empty;
+        public string PasswordNueva {get; set;} = string.Empty;
     }
 }
