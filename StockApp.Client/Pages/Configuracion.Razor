@@ -1,0 +1,117 @@
+@page "/configuracion"
+@inject HttpClient Http
+
+<AdminOnly>
+
+<h3>⚙️ Configuración</h3>
+
+<div class="panel">
+    <h4>🏪 Datos del negocio</h4>
+
+    <div class="campo">
+        <label>Nombre del negocio</label>
+        <input @bind="nombreNegocio" placeholder="Ej: Almacén Don José" />
+    </div>
+
+    <div class="campo">
+        <label>Dirección (opcional)</label>
+        <input @bind="direccionNegocio" placeholder="Ej: San Martín 123" />
+    </div>
+
+    <div class="campo">
+        <label>Teléfono (opcional)</label>
+        <input @bind="telefonoNegocio" placeholder="Ej: 3464123456" />
+    </div>
+
+    <button class="btn-guardar" @onclick="Guardar">💾 Guardar cambios</button>
+</div>
+
+@if (!string.IsNullOrEmpty(mensaje))
+{
+    <p class="mensaje">@mensaje</p>
+}
+
+</AdminOnly>
+
+@code {
+    private string nombreNegocio = string.Empty;
+    private string direccionNegocio = string.Empty;
+    private string telefonoNegocio = string.Empty;
+    private string mensaje = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var nombre = await Http.GetFromJsonAsync<ConfigDto>("configuracion/NombreNegocio");
+        var direccion = await Http.GetFromJsonAsync<ConfigDto>("configuracion/DireccionNegocio");
+        var telefono = await Http.GetFromJsonAsync<ConfigDto>("configuracion/TelefonoNegocio");
+
+        nombreNegocio = nombre?.Valor ?? string.Empty;
+        direccionNegocio = direccion?.Valor ?? string.Empty;
+        telefonoNegocio = telefono?.Valor ?? string.Empty;
+    }
+
+    private async Task Guardar()
+    {
+        await Http.PostAsJsonAsync("configuracion", new { Clave = "NombreNegocio", Valor = nombreNegocio });
+        await Http.PostAsJsonAsync("configuracion", new { Clave = "DireccionNegocio", Valor = direccionNegocio });
+        await Http.PostAsJsonAsync("configuracion", new { Clave = "TelefonoNegocio", Valor = telefonoNegocio });
+
+        mensaje = "✅ Configuración guardada correctamente.";
+    }
+
+    public class ConfigDto
+    {
+        public string Clave { get; set; } = string.Empty;
+        public string Valor { get; set; } = string.Empty;
+    }
+}
+
+<style>
+    h3 { margin-bottom: 1rem; }
+    h4 { margin-bottom: 1rem; }
+
+    .panel {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        max-width: 500px;
+        margin-bottom: 1.5rem;
+    }
+
+    .campo {
+        margin-bottom: 0.8rem;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .campo label {
+        font-weight: 600;
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+
+    .campo input {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+    }
+
+    .btn-guardar {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-size: 15px;
+        cursor: pointer;
+        margin-top: 0.5rem;
+    }
+
+    .mensaje {
+        font-weight: 600;
+        color: #27ae60;
+        margin-top: 1rem;
+    }
+</style>

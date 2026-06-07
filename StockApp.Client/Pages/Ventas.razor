@@ -75,7 +75,15 @@
 {
     <div class="ticket" id="ticket-imprimir">
         <div class="ticket-header">
-            <h2>📦 StockApp</h2>
+            <h2>@nombreNegocio</h2>
+            @if (!string.IsNullOrEmpty(direccionNegocio))
+            {
+                <p>@direccionNegocio</p>
+            }
+            @if (!string.IsNullOrEmpty(telefonoNegocio))
+            {
+                <p>@telefonoNegocio</p>
+            }
             <p>@ultimaVenta.Fecha.ToString("dd/MM/yyyy HH:mm")</p>
         </div>
         <hr />
@@ -130,6 +138,10 @@
     private string mensaje = string.Empty;
     private TicketData? ultimaVenta;
 
+    private string nombreNegocio = "StockApp";
+    private string direccionNegocio = string.Empty;
+    private string telefonoNegocio = string.Empty;
+
     protected override async Task OnInitializedAsync()
     {
         productos = await Http.GetFromJsonAsync<List<ProductoDto>>("productos") ?? new();
@@ -143,6 +155,18 @@
         {
             cajaAbierta = false;
         }
+
+        try
+        {
+            var nombre = await Http.GetFromJsonAsync<ConfigDto>("configuracion/NombreNegocio");
+            var direccion = await Http.GetFromJsonAsync<ConfigDto>("configuracion/DireccionNegocio");
+            var telefono = await Http.GetFromJsonAsync<ConfigDto>("configuracion/TelefonoNegocio");
+
+            nombreNegocio = !string.IsNullOrEmpty(nombre?.Valor) ? nombre!.Valor : "StockApp";
+            direccionNegocio = direccion?.Valor ?? string.Empty;
+            telefonoNegocio = telefono?.Valor ?? string.Empty;
+        }
+        catch { }
     }
 
     private void AgregarItem()
@@ -191,7 +215,6 @@
 
         if (response.IsSuccessStatusCode)
         {
-            // Guardamos los datos para el ticket
             ultimaVenta = new TicketData
             {
                 Fecha = DateTime.Now,
@@ -243,6 +266,12 @@
         public string MetodoPago { get; set; } = string.Empty;
         public decimal Total { get; set; }
         public List<VentaItem> Items { get; set; } = new();
+    }
+
+    public class ConfigDto
+    {
+        public string Clave { get; set; } = string.Empty;
+        public string Valor { get; set; } = string.Empty;
     }
 }
 
