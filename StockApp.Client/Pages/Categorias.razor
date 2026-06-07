@@ -105,24 +105,30 @@ else
         mensaje = string.Empty;
     }
 
-    private async Task GuardarCategoria()
+   private async Task GuardarCategoria()
+{
+    if (string.IsNullOrWhiteSpace(categoriaEditando.Nombre))
     {
-        categoriaEditando.Activo = true;
-
-        if (categoriaEditando.Id == 0)
-        {
-            await Http.PostAsJsonAsync("categorias", categoriaEditando);
-            mensaje = "Categoria creada correctamente.";
-        }
-        else
-        {
-            await Http.PutAsJsonAsync($"categorias/{categoriaEditando.Id}", categoriaEditando);
-            mensaje = "Categoria actualizada correctamente.";
-        }
-
-        mostrarFormulario = false;
-        await CargarCategorias();
+        mensaje = "❌ El nombre de la categoría es obligatorio.";
+        return;
     }
+
+    categoriaEditando.Activo = true;
+
+    if (categoriaEditando.Id == 0)
+    {
+        await Http.PostAsJsonAsync("categorias", categoriaEditando);
+        mensaje = "✅ Categoria creada correctamente.";
+    }
+    else
+    {
+        await Http.PutAsJsonAsync($"categorias/{categoriaEditando.Id}", categoriaEditando);
+        mensaje = "✅ Categoria actualizada correctamente.";
+    }
+
+    mostrarFormulario = false;
+    await CargarCategorias();
+}
 
   private async Task Eliminar(int id)
 {

@@ -1,0 +1,309 @@
+@page "/historial-ventas"
+@inject HttpClient Http
+
+<h3>📋 Historial de Ventas</h3>
+
+<div class="panel">
+    <div class="filtros">
+        <div class="campo">
+            <label>Desde</label>
+            <div class="fecha-filtro">
+                <input type="number" @bind="diaDesde" min="1" max="31" placeholder="Día" />
+                <input type="number" @bind="mesDesde" min="1" max="12" placeholder="Mes" />
+                <input type="number" @bind="anioDesde" min="2024" max="2099" placeholder="Año" />
+            </div>
+        </div>
+        <div class="campo">
+            <label>Hasta</label>
+            <div class="fecha-filtro">
+                <input type="number" @bind="diaHasta" min="1" max="31" placeholder="Día" />
+                <input type="number" @bind="mesHasta" min="1" max="12" placeholder="Mes" />
+                <input type="number" @bind="anioHasta" min="2024" max="2099" placeholder="Año" />
+            </div>
+        </div>
+        <button class="btn-buscar" @onclick="CargarVentas">🔍 Buscar</button>
+        <button class="btn-hoy" @onclick="CargarHoy">📅 Hoy</button>
+    </div>
+</div>
+
+@if (cargando)
+{
+    <p>Cargando...</p>
+}
+else if (ventas == null || !ventas.Any())
+{
+    <p>No hay ventas en el período seleccionado.</p>
+}
+else
+{
+    <div class="resumen">
+        <div class="resumen-item">
+            <span class="resumen-numero">@ventas.Count</span>
+            <span class="resumen-label">Ventas</span>
+        </div>
+        <div class="resumen-item">
+            <span class="resumen-numero">$@ventas.Sum(v => v.Total)</span>
+            <span class="resumen-label">Total recaudado</span>
+        </div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th>Fecha</th>
+                <th>Hora</th>
+                <th>Productos</th>
+                <th>Método de pago</th>
+                <th>Total</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var v in ventas)
+            {
+                <tr>
+                    <td>@v.Fecha.ToString("dd/MM/yyyy")</td>
+                    <td>@v.Fecha.ToString("HH:mm")</td>
+                    <td>@v.Detalles.Count producto(s)</td>
+                    <td>@v.MetodoPago</td>
+                    <td>$@v.Total</td>
+                    <td>
+                        <button class="btn-ver" @onclick="() => ToggleDetalle(v.Id)">
+                            @(ventaExpandida == v.Id ? "▲ Cerrar" : "▼ Ver detalle")
+                        </button>
+                    </td>
+                </tr>
+                @if (ventaExpandida == v.Id)
+                {
+                    <tr class="fila-detalle">
+                        <td colspan="6">
+                            <table class="tabla-detalle">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio unitario</th>
+                                        <th>Subtotal</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var d in v.Detalles)
+                                    {
+                                        <tr>
+                                            <td>@d.Producto?.Nombre</td>
+                                            <td>@d.Cantidad</td>
+                                            <td>$@d.PrecioUnitario</td>
+                                            <td>$@(d.Cantidad * d.PrecioUnitario)</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<VentaDto>? ventas;
+    private bool cargando = false;
+    private int? ventaExpandida;
+
+    private int diaDesde = 1;
+    private int mesDesde = DateTime.Now.Month;
+    private int anioDesde = DateTime.Now.Year;
+    private int diaHasta = DateTime.Now.Day;
+    private int mesHasta = DateTime.Now.Month;
+    private int anioHasta = DateTime.Now.Year;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await CargarHoy();
+    }
+
+    private async Task CargarHoy()
+    {
+        diaDesde = DateTime.Now.Day;
+        mesDesde = DateTime.Now.Month;
+        anioDesde = DateTime.Now.Year;
+        diaHasta = DateTime.Now.Day;
+        mesHasta = DateTime.Now.Month;
+        anioHasta = DateTime.Now.Year;
+        await CargarVentas();
+    }
+
+    private async Task CargarVentas()
+    {
+        cargando = true;
+        ventas = await Http.GetFromJsonAsync<List<VentaDto>>("ventas") ?? new();
+
+        try
+        {
+            var desde = new DateTime(anioDesde, mesDesde, diaDesde);
+            var hasta = new DateTime(anioHasta, mesHasta, diaHasta, 23, 59, 59);
+            ventas = ventas.Where(v => v.Fecha >= desde && v.Fecha <= hasta)
+                           .OrderByDescending(v => v.Fecha)
+                           .ToList();
+        }
+        catch
+        {
+            ventas = new();
+        }
+
+        cargando = false;
+    }
+
+    private void ToggleDetalle(int id)
+    {
+        ventaExpandida = ventaExpandida == id ? null : id;
+    }
+
+    public class VentaDto
+    {
+        public int Id { get; set; }
+        public decimal Total { get; set; }
+        public string MetodoPago { get; set; } = string.Empty;
+        public DateTime Fecha { get; set; }
+        public List<DetalleDto> Detalles { get; set; } = new();
+    }
+
+    public class DetalleDto
+    {
+        public int Cantidad { get; set; }
+        public decimal PrecioUnitario { get; set; }
+        public ProductoDto? Producto { get; set; }
+    }
+
+    public class ProductoDto
+    {
+        public string Nombre { get; set; } = string.Empty;
+    }
+}
+
+<style>
+    h3 { margin-bottom: 1rem; }
+
+    .panel {
+        background: #f9f9f9;
+        border: 1px solid #ddd;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .filtros {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .campo {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .campo label {
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .fecha-filtro {
+        display: flex;
+        gap: 6px;
+    }
+
+    .fecha-filtro input {
+        width: 60px;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 6px;
+        font-size: 15px;
+        text-align: center;
+    }
+
+    .btn-buscar {
+        background-color: #3498db;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .btn-hoy {
+        background-color: #2ecc71;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 6px;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .resumen {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .resumen-item {
+        background: #eaf4fb;
+        border: 2px solid #3498db;
+        border-radius: 10px;
+        padding: 1rem 1.5rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .resumen-numero { font-size: 24px; font-weight: bold; }
+    .resumen-label { font-size: 13px; color: #555; }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+    }
+
+    th, td {
+        padding: 10px 14px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    th { background-color: #f4f4f4; font-weight: 600; }
+    tr:hover { background-color: #f9f9f9; }
+
+    .fila-detalle { background-color: #f9f9f9; }
+    .fila-detalle:hover { background-color: #f9f9f9; }
+
+    .tabla-detalle {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 8px 0;
+    }
+
+    .tabla-detalle th, .tabla-detalle td {
+        padding: 6px 10px;
+        border-bottom: 1px dotted #ddd;
+        font-size: 14px;
+    }
+
+    .tabla-detalle th { background-color: #eee; }
+
+    .btn-ver {
+        background: none;
+        border: 1px solid #3498db;
+        color: #3498db;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+</style>

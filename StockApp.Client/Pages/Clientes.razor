@@ -1,10 +1,14 @@
 @page "/clientes"
-@inject IJSRuntime JS
 @inject HttpClient Http
+@inject IJSRuntime JS
 
 <h3>👥 Clientes</h3>
 
 <button class="btn-nuevo" @onclick="MostrarFormulario">+ Nuevo Cliente</button>
+
+<div class="buscador">
+    <input @bind="textoBusqueda" @bind:event="oninput" placeholder="🔍 Buscar cliente..." />
+</div>
 
 @if (mostrarFormulario)
 {
@@ -50,7 +54,10 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var c in clientes)
+            @foreach (var c in clientes.Where(c =>
+                string.IsNullOrEmpty(textoBusqueda) ||
+                c.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase) ||
+                (c.Telefono != null && c.Telefono.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase))))
             {
                 <tr class="@(c.SaldoDeudor > 0 ? "tiene-deuda" : "")">
                     <td>@c.Nombre</td>
@@ -134,6 +141,7 @@ else
     private string mensaje = string.Empty;
     private decimal montoOperacion = 0;
     private string descripcionOperacion = string.Empty;
+    private string textoBusqueda = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -190,33 +198,40 @@ else
 
     private async Task GuardarCliente()
     {
+        if (string.IsNullOrWhiteSpace(clienteEditando.Nombre))
+        {
+            mensaje = "❌ El nombre del cliente es obligatorio.";
+            return;
+        }
+
         clienteEditando.Activo = true;
 
         if (clienteEditando.Id == 0)
         {
             await Http.PostAsJsonAsync("clientes", clienteEditando);
-            mensaje = "Cliente creado correctamente.";
+            mensaje = "✅ Cliente creado correctamente.";
         }
         else
         {
             await Http.PutAsJsonAsync($"clientes/{clienteEditando.Id}", clienteEditando);
-            mensaje = "Cliente actualizado correctamente.";
+            mensaje = "✅ Cliente actualizado correctamente.";
         }
 
         mostrarFormulario = false;
         await CargarClientes();
     }
 
-   private async Task Eliminar(int id)
-{
-    var confirmado = await JS.InvokeAsync<bool>("confirm", "¿Seguro que querés eliminar este cliente?");
-    if (!confirmado) return;
+    private async Task Eliminar(int id)
+    {
+        var confirmado = await JS.InvokeAsync<bool>("confirm", "¿Seguro que querés eliminar este cliente?");
+        if (!confirmado) return;
 
-    await Http.DeleteAsync($"clientes/{id}");
-    mensaje = "Cliente eliminado.";
-    clienteSeleccionado = null;
-    await CargarClientes();
-}
+        await Http.DeleteAsync($"clientes/{id}");
+        mensaje = "Cliente eliminado.";
+        clienteSeleccionado = null;
+        await CargarClientes();
+    }
+
     private async Task VerCuenta(int id)
     {
         var detalle = await Http.GetFromJsonAsync<CuentaResponse>($"clientes/{id}/cuenta");
@@ -237,7 +252,7 @@ else
 
         var request = new { Monto = montoOperacion, Descripcion = descripcionOperacion };
         await Http.PostAsJsonAsync($"clientes/{clienteSeleccionado.Id}/deuda", request);
-        mensaje = "Deuda registrada correctamente.";
+        mensaje = "✅ Deuda registrada correctamente.";
         await VerCuenta(clienteSeleccionado.Id);
         await CargarClientes();
     }
@@ -248,7 +263,7 @@ else
 
         var request = new { Monto = montoOperacion, Descripcion = descripcionOperacion };
         await Http.PostAsJsonAsync($"clientes/{clienteSeleccionado.Id}/pago", request);
-        mensaje = "Pago registrado correctamente.";
+        mensaje = "✅ Pago registrado correctamente.";
         await VerCuenta(clienteSeleccionado.Id);
         await CargarClientes();
     }
@@ -302,6 +317,18 @@ else
         font-size: 16px;
         cursor: pointer;
         margin-bottom: 1rem;
+    }
+
+    .buscador {
+        margin-bottom: 1rem;
+    }
+
+    .buscador input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 15px;
+        width: 300px;
     }
 
     .formulario {

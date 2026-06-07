@@ -1,6 +1,6 @@
 @page "/productos"
-@inject IJSRuntime JS
 @inject HttpClient Http
+@inject IJSRuntime JS
 
 <h3>📦 Productos</h3>
 
@@ -73,8 +73,15 @@
     </div>
 }
 
-<div class="buscador">
+<div class="filtros-tabla">
     <input @bind="textoBusqueda" @bind:event="oninput" placeholder="🔍 Buscar producto..." />
+    <select @bind="categoriaFiltro">
+        <option value="0">Todas las categorías</option>
+        @foreach (var c in categorias)
+        {
+            <option value="@c.Id">@c.Nombre</option>
+        }
+    </select>
 </div>
 
 @if (productos == null)
@@ -103,8 +110,9 @@ else
         </thead>
         <tbody>
             @foreach (var p in productos.Where(p =>
-                string.IsNullOrEmpty(textoBusqueda) ||
-                p.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)))
+                (string.IsNullOrEmpty(textoBusqueda) ||
+                p.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)) &&
+                (categoriaFiltro == 0 || p.CategoriaId == categoriaFiltro)))
             {
                 <tr class="@(p.StockActual <= p.StockMinimo ? "stock-bajo" : "")">
                     <td>@p.Nombre</td>
@@ -138,6 +146,7 @@ else
     private bool mostrarFormulario = false;
     private string mensaje = string.Empty;
     private string textoBusqueda = string.Empty;
+    private int categoriaFiltro = 0;
 
     private int? diaVencimiento;
     private int? mesVencimiento;
@@ -200,6 +209,32 @@ else
 
     private async Task GuardarProducto()
     {
+        if (string.IsNullOrWhiteSpace(productoEditando.Nombre))
+        {
+            mensaje = "❌ El nombre del producto es obligatorio.";
+            return;
+        }
+        if (productoEditando.PrecioVenta <= 0)
+        {
+            mensaje = "❌ El precio de venta debe ser mayor a 0.";
+            return;
+        }
+        if (productoEditando.Costo < 0)
+        {
+            mensaje = "❌ El costo no puede ser negativo.";
+            return;
+        }
+        if (productoEditando.StockActual < 0)
+        {
+            mensaje = "❌ El stock no puede ser negativo.";
+            return;
+        }
+        if (productoEditando.StockMinimo < 0)
+        {
+            mensaje = "❌ El stock mínimo no puede ser negativo.";
+            return;
+        }
+
         if (diaVencimiento.HasValue && mesVencimiento.HasValue && anioVencimiento.HasValue)
         {
             try
@@ -212,7 +247,7 @@ else
             }
             catch
             {
-                mensaje = "La fecha ingresada no es válida.";
+                mensaje = "❌ La fecha ingresada no es válida.";
                 return;
             }
         }
@@ -224,12 +259,12 @@ else
         if (productoEditando.Id == 0)
         {
             await Http.PostAsJsonAsync("productos", productoEditando);
-            mensaje = "Producto creado correctamente.";
+            mensaje = "✅ Producto creado correctamente.";
         }
         else
         {
             await Http.PutAsJsonAsync($"productos/{productoEditando.Id}", productoEditando);
-            mensaje = "Producto actualizado correctamente.";
+            mensaje = "✅ Producto actualizado correctamente.";
         }
 
         mostrarFormulario = false;
@@ -239,15 +274,16 @@ else
         await CargarProductos();
     }
 
-   private async Task Eliminar(int id)
-{
-    var confirmado = await JS.InvokeAsync<bool>("confirm", "¿Seguro que querés eliminar este producto?");
-    if (!confirmado) return;
+    private async Task Eliminar(int id)
+    {
+        var confirmado = await JS.InvokeAsync<bool>("confirm", "¿Seguro que querés eliminar este producto?");
+        if (!confirmado) return;
 
-    await Http.DeleteAsync($"productos/{id}");
-    mensaje = "Producto eliminado.";
-    await CargarProductos();
-}
+        await Http.DeleteAsync($"productos/{id}");
+        mensaje = "Producto eliminado.";
+        await CargarProductos();
+    }
+
     public class Producto
     {
         public int Id { get; set; }
@@ -307,16 +343,26 @@ else
         text-decoration: none;
     }
 
-    .buscador {
+    .filtros-tabla {
+        display: flex;
+        gap: 10px;
         margin-bottom: 1rem;
+        align-items: center;
     }
 
-    .buscador input {
+    .filtros-tabla input {
         padding: 10px;
         border: 1px solid #ccc;
         border-radius: 8px;
         font-size: 15px;
         width: 300px;
+    }
+
+    .filtros-tabla select {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 15px;
     }
 
     .formulario {

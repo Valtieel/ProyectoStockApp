@@ -8,6 +8,10 @@
 
 <button class="btn-nuevo" @onclick="MostrarFormulario">+ Nuevo Proveedor</button>
 
+<div class="buscador">
+    <input @bind="textoBusqueda" @bind:event="oninput" placeholder="🔍 Buscar proveedor..." />
+</div>
+
 @if (mostrarFormulario)
 {
     <div class="formulario">
@@ -61,7 +65,9 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var p in proveedores)
+            @foreach (var p in proveedores.Where(p =>
+                string.IsNullOrEmpty(textoBusqueda) ||
+                p.Nombre.Contains(textoBusqueda, StringComparison.OrdinalIgnoreCase)))
             {
                 <tr>
                     <td>@p.Nombre</td>
@@ -91,6 +97,7 @@ else
     private ProveedorDto proveedorEditando = new();
     private bool mostrarFormulario = false;
     private string mensaje = string.Empty;
+    private string textoBusqueda = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
@@ -132,32 +139,38 @@ else
 
     private async Task GuardarProveedor()
     {
+        if (string.IsNullOrWhiteSpace(proveedorEditando.Nombre))
+        {
+            mensaje = "❌ El nombre del proveedor es obligatorio.";
+            return;
+        }
+
         proveedorEditando.Activo = true;
 
         if (proveedorEditando.Id == 0)
         {
             await Http.PostAsJsonAsync("proveedores", proveedorEditando);
-            mensaje = "Proveedor creado correctamente.";
+            mensaje = "✅ Proveedor creado correctamente.";
         }
         else
         {
             await Http.PutAsJsonAsync($"proveedores/{proveedorEditando.Id}", proveedorEditando);
-            mensaje = "Proveedor actualizado correctamente.";
+            mensaje = "✅ Proveedor actualizado correctamente.";
         }
 
         mostrarFormulario = false;
         await CargarProveedores();
     }
 
-  private async Task Eliminar(int id)
-{
-    var confirmado = await JS.InvokeAsync<bool>("confirm", "¿Seguro que querés eliminar este proveedor?");
-    if (!confirmado) return;
+    private async Task Eliminar(int id)
+    {
+        var confirmado = await JS.InvokeAsync<bool>("confirm", "¿Seguro que querés eliminar este proveedor?");
+        if (!confirmado) return;
 
-    await Http.DeleteAsync($"proveedores/{id}");
-    mensaje = "Proveedor eliminado.";
-    await CargarProveedores();
-}
+        await Http.DeleteAsync($"proveedores/{id}");
+        mensaje = "Proveedor eliminado.";
+        await CargarProveedores();
+    }
 
     public class ProveedorDto
     {
@@ -183,6 +196,18 @@ else
         font-size: 16px;
         cursor: pointer;
         margin-bottom: 1rem;
+    }
+
+    .buscador {
+        margin-bottom: 1rem;
+    }
+
+    .buscador input {
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-size: 15px;
+        width: 300px;
     }
 
     .formulario {
