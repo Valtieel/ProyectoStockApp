@@ -1,104 +1,147 @@
 @page "/alertas"
 @inject HttpClient Http
 
-<h3>🚨 Alertas</h3>
+<div class="sa-page-head">
+    <div class="sa-page-title">
+        <span class="sa-page-ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+        </span>
+        <div>
+            <h1>Alertas</h1>
+            <div class="sa-page-sub">Stock bajo, vencimientos y productos vencidos</div>
+        </div>
+    </div>
+</div>
 
 @if (cargando)
 {
-    <p>Cargando...</p>
+    <p style="color:var(--sa-sub);">Cargando...</p>
 }
 else
 {
-    <div class="resumen">
-        <div class="tarjeta @(resumen?.StockBajo > 0 ? "alerta" : "ok")">
-            <span class="numero">@resumen?.StockBajo</span>
-            <span class="label">Stock bajo</span>
+    <div class="sa-grid-3" style="margin-bottom:24px;">
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico @(resumen?.StockBajo > 0 ? "sa-stat-ico--danger" : "sa-stat-ico--ok")">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value" style="@(resumen?.StockBajo > 0 ? "color:#DC2626;" : "")">@resumen?.StockBajo</div>
+                <div class="sa-stat-label">Stock bajo</div>
+            </div>
         </div>
-        <div class="tarjeta @(resumen?.PorVencer > 0 ? "advertencia" : "ok")">
-            <span class="numero">@resumen?.PorVencer</span>
-            <span class="label">Por vencer (30 días)</span>
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico @(resumen?.PorVencer > 0 ? "sa-stat-ico--warn" : "sa-stat-ico--ok")">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value" style="@(resumen?.PorVencer > 0 ? "color:var(--sa-warn-ink);" : "")">@resumen?.PorVencer</div>
+                <div class="sa-stat-label">Por vencer (30 días)</div>
+            </div>
         </div>
-        <div class="tarjeta @(resumen?.Vencidos > 0 ? "alerta" : "ok")">
-            <span class="numero">@resumen?.Vencidos</span>
-            <span class="label">Vencidos</span>
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico @(resumen?.Vencidos > 0 ? "sa-stat-ico--danger" : "sa-stat-ico--ok")">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value" style="@(resumen?.Vencidos > 0 ? "color:#DC2626;" : "")">@resumen?.Vencidos</div>
+                <div class="sa-stat-label">Vencidos</div>
+            </div>
         </div>
     </div>
 
     @if (productosStockBajo.Any())
     {
-        <h4>📉 Productos con stock bajo</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Stock actual</th>
-                    <th>Stock mínimo</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var p in productosStockBajo)
-                {
-                    <tr class="fila-alerta">
-                        <td>@p.Nombre</td>
-                        <td>@p.StockActual</td>
-                        <td>@p.StockMinimo</td>
+        <div class="sa-card-title" style="margin-bottom:12px;display:flex;align-items:center;gap:9px;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--sa-danger)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
+            Productos con stock bajo
+        </div>
+        <div class="sa-card sa-card--flush" style="margin-bottom:24px;">
+            <table class="sa-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th class="sa-right">Stock actual</th>
+                        <th class="sa-right">Stock mínimo</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var p in productosStockBajo)
+                    {
+                        <tr class="sa-row--alert">
+                            <td class="sa-strong">@p.Nombre</td>
+                            <td class="sa-right sa-num">@p.StockActual</td>
+                            <td class="sa-right sa-num">@p.StockMinimo</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 
     @if (productosPorVencer.Any())
     {
-        <h4>⏳ Productos por vencer</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Stock actual</th>
-                    <th>Vencimiento</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var p in productosPorVencer)
-                {
-                    <tr class="fila-advertencia">
-                        <td>@p.Nombre</td>
-                        <td>@p.StockActual</td>
-                        <td>@p.FechaVencimiento?.ToString("dd/MM/yyyy")</td>
+        <div class="sa-card-title" style="margin-bottom:12px;display:flex;align-items:center;gap:9px;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--sa-warn-ink)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            Productos por vencer
+        </div>
+        <div class="sa-card sa-card--flush" style="margin-bottom:24px;">
+            <table class="sa-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th class="sa-right">Stock actual</th>
+                        <th>Vencimiento</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var p in productosPorVencer)
+                    {
+                        <tr class="sa-row--warn">
+                            <td class="sa-strong">@p.Nombre</td>
+                            <td class="sa-right sa-num">@p.StockActual</td>
+                            <td>@p.FechaVencimiento?.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 
     @if (productosVencidos.Any())
     {
-        <h4>❌ Productos vencidos</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>Producto</th>
-                    <th>Stock actual</th>
-                    <th>Vencimiento</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var p in productosVencidos)
-                {
-                    <tr class="fila-alerta">
-                        <td>@p.Nombre</td>
-                        <td>@p.StockActual</td>
-                        <td>@p.FechaVencimiento?.ToString("dd/MM/yyyy")</td>
+        <div class="sa-card-title" style="margin-bottom:12px;display:flex;align-items:center;gap:9px;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--sa-danger)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>
+            Productos vencidos
+        </div>
+        <div class="sa-card sa-card--flush" style="margin-bottom:24px;">
+            <table class="sa-table">
+                <thead>
+                    <tr>
+                        <th>Producto</th>
+                        <th class="sa-right">Stock actual</th>
+                        <th>Vencimiento</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var p in productosVencidos)
+                    {
+                        <tr class="sa-row--alert">
+                            <td class="sa-strong">@p.Nombre</td>
+                            <td class="sa-right sa-num">@p.StockActual</td>
+                            <td>@p.FechaVencimiento?.ToString("dd/MM/yyyy")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 
     @if (resumen?.HayAlertas == false)
     {
-        <p class="todo-bien">✅ Todo bien, no hay alertas por el momento.</p>
+        <div class="sa-alert-row" style="background:var(--sa-ok-soft);color:var(--sa-ok-ink);max-width:480px;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+            <span>Todo bien, no hay alertas por el momento.</span>
+        </div>
     }
 }
 
@@ -149,55 +192,3 @@ else
         public DateTime? FechaVencimiento { get; set; }
     }
 }
-
-<style>
-    h3 { margin-bottom: 1rem; }
-    h4 { margin-top: 1.5rem; margin-bottom: 0.5rem; }
-
-    .resumen {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 2rem;
-    }
-
-    .tarjeta {
-        flex: 1;
-        border-radius: 10px;
-        padding: 1.2rem;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .tarjeta.ok { background-color: #eafaf1; border: 2px solid #2ecc71; }
-    .tarjeta.alerta { background-color: #fdecea; border: 2px solid #e74c3c; }
-    .tarjeta.advertencia { background-color: #fef9e7; border: 2px solid #f1c40f; }
-
-    .numero { font-size: 36px; font-weight: bold; }
-    .label { font-size: 14px; color: #555; }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 1rem;
-    }
-
-    th, td {
-        padding: 8px 12px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-    }
-
-    th { background-color: #f4f4f4; font-weight: 600; }
-
-    .fila-alerta { background-color: #fdecea; }
-    .fila-advertencia { background-color: #fef9e7; }
-
-    .todo-bien {
-        font-size: 18px;
-        color: #27ae60;
-        font-weight: 600;
-        margin-top: 1rem;
-    }
-</style>

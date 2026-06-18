@@ -2,15 +2,26 @@
 @inject HttpClient Http
 @inject IJSRuntime JS
 <AdminOnly>
-<h3>📊 Reportes</h3>
 
-<div class="panel">
-    <h4>📅 Período</h4>
-    <div class="filtros">
-        <div class="campo">
-            <label>Desde</label>
-            <div class="fecha-filtro">
-                <select @bind="mesDesde">
+<div class="sa-page-head">
+    <div class="sa-page-title">
+        <span class="sa-page-ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path><path d="M16 13H8"></path><path d="M16 17H8"></path><path d="M10 9H8"></path></svg>
+        </span>
+        <div>
+            <h1>Reportes</h1>
+            <div class="sa-page-sub">Generación y descarga de reportes</div>
+        </div>
+    </div>
+</div>
+
+<div class="sa-card" style="margin-bottom:24px;">
+    <div class="sa-card-title" style="margin-bottom:14px;">Período (para Ventas y Movimientos)</div>
+    <div style="display:flex;gap:24px;flex-wrap:wrap;">
+        <div>
+            <label class="sa-label">Desde</label>
+            <div style="display:flex;gap:8px;margin-top:7px;">
+                <select class="sa-select" @bind="mesDesde" style="width:140px;">
                     <option value="1">Enero</option>
                     <option value="2">Febrero</option>
                     <option value="3">Marzo</option>
@@ -24,13 +35,13 @@
                     <option value="11">Noviembre</option>
                     <option value="12">Diciembre</option>
                 </select>
-                <input type="number" @bind="añoDesde" min="2024" max="2099" />
+                <input class="sa-input" type="number" @bind="añoDesde" min="2024" max="2099" style="width:90px;" />
             </div>
         </div>
-        <div class="campo">
-            <label>Hasta</label>
-            <div class="fecha-filtro">
-                <select @bind="mesHasta">
+        <div>
+            <label class="sa-label">Hasta</label>
+            <div style="display:flex;gap:8px;margin-top:7px;">
+                <select class="sa-select" @bind="mesHasta" style="width:140px;">
                     <option value="1">Enero</option>
                     <option value="2">Febrero</option>
                     <option value="3">Marzo</option>
@@ -44,44 +55,53 @@
                     <option value="11">Noviembre</option>
                     <option value="12">Diciembre</option>
                 </select>
-                <input type="number" @bind="añoHasta" min="2024" max="2099" />
+                <input class="sa-input" type="number" @bind="añoHasta" min="2024" max="2099" style="width:90px;" />
             </div>
         </div>
     </div>
 </div>
 
-<div class="reportes-grid">
-    <div class="reporte-card">
-        <div class="icono">💰</div>
-        <h4>Reporte de Ventas</h4>
+<div class="sa-grid-3" style="margin-bottom:24px;">
+    <div class="sa-card sa-report-card">
+        <span class="sa-report-ico sa-report-ico--ventas">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+        </span>
+        <h4>Reporte de ventas</h4>
         <p>Todas las ventas del período con detalle de productos, precios y métodos de pago.</p>
-        <button class="btn-descargar azul" @onclick="DescargarVentas">
-            📥 Descargar Excel
+        <button class="sa-btn sa-btn--soft" @onclick="DescargarVentas">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Descargar Excel
         </button>
     </div>
 
-    <div class="reporte-card">
-        <div class="icono">📦</div>
-        <h4>Reporte de Stock</h4>
+    <div class="sa-card sa-report-card">
+        <span class="sa-report-ico sa-report-ico--stock">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
+        </span>
+        <h4>Reporte de stock</h4>
         <p>Estado actual del stock con alertas de productos bajo mínimo y por vencer.</p>
-        <button class="btn-descargar verde" @onclick="DescargarStock">
-            📥 Descargar Excel
+        <button class="sa-btn sa-btn--soft" @onclick="DescargarStock">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Descargar Excel
         </button>
     </div>
 
-    <div class="reporte-card">
-        <div class="icono">📋</div>
-        <h4>Reporte de Movimientos</h4>
+    <div class="sa-card sa-report-card">
+        <span class="sa-report-ico sa-report-ico--mov">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"></path><path d="M4 7h16"></path><path d="m16 21 4-4-4-4"></path><path d="M20 17H4"></path></svg>
+        </span>
+        <h4>Reporte de movimientos</h4>
         <p>Todas las entradas y salidas de mercadería del período seleccionado.</p>
-        <button class="btn-descargar naranja" @onclick="DescargarMovimientos">
-            📥 Descargar Excel
+        <button class="sa-btn sa-btn--soft" @onclick="DescargarMovimientos">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+            Descargar Excel
         </button>
     </div>
 </div>
 
 @if (!string.IsNullOrEmpty(mensaje))
 {
-    <p class="mensaje">@mensaje</p>
+    <div class="sa-feedback sa-feedback--ok" style="max-width:480px;">@mensaje</div>
 }
 </AdminOnly>
 
@@ -128,102 +148,3 @@
         }
     }
 }
-
-<style>
-    h3 { margin-bottom: 1rem; }
-    h4 { margin-bottom: 0.8rem; }
-
-    .panel {
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .filtros {
-        display: flex;
-        gap: 2rem;
-        align-items: flex-end;
-    }
-
-    .campo {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .campo label {
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-    .fecha-filtro {
-        display: flex;
-        gap: 8px;
-        align-items: center;
-    }
-
-    .fecha-filtro select {
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 15px;
-    }
-
-    .fecha-filtro input {
-        width: 80px;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 15px;
-    }
-
-    .reportes-grid {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        margin-bottom: 1.5rem;
-    }
-
-    .reporte-card {
-        flex: 1;
-        min-width: 200px;
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 1.5rem;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-    }
-
-    .icono { font-size: 40px; }
-
-    .reporte-card p {
-        color: #666;
-        font-size: 14px;
-        flex: 1;
-    }
-
-    .btn-descargar {
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        font-size: 15px;
-        cursor: pointer;
-        margin-top: auto;
-    }
-
-    .btn-descargar.azul { background-color: #3498db; }
-    .btn-descargar.verde { background-color: #2ecc71; }
-    .btn-descargar.naranja { background-color: #e67e22; }
-
-    .mensaje {
-        font-weight: 600;
-        color: #27ae60;
-        margin-top: 1rem;
-    }
-</style>

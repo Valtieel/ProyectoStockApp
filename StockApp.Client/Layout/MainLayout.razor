@@ -3,23 +3,14 @@
 @inject AuthService Auth
 @inject NavigationManager Nav
 
-<div class="page">
+<div class="sa-app">
     @if (!Nav.Uri.Contains("/login"))
     {
-        <div class="sidebar">
-            <NavMenu />
-        </div>
+        <NavMenu />
     }
 
-    <main>
-        @if (!Nav.Uri.Contains("/login"))
-        {
-            <div class="top-row px-4">
-                <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
-            </div>
-        }
-
-        <article class="content px-4">
+    <main class="sa-main">
+        <article class="sa-content">
             @Body
         </article>
     </main>

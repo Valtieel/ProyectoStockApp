@@ -3,32 +3,52 @@
 
 <AdminOnly>
 
-<h3>⚙️ Configuración</h3>
+<div class="sa-page-head">
+    <div class="sa-page-title">
+        <span class="sa-page-ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path></svg>
+        </span>
+        <div>
+            <h1>Configuración</h1>
+            <div class="sa-page-sub">Datos del negocio</div>
+        </div>
+    </div>
+</div>
 
-<div class="panel">
-    <h4>🏪 Datos del negocio</h4>
-
-    <div class="campo">
-        <label>Nombre del negocio</label>
-        <input @bind="nombreNegocio" placeholder="Ej: Almacén Don José" />
+<div class="sa-card" style="max-width:480px;">
+    <div class="sa-card-title" style="margin-bottom:16px;display:flex;align-items:center;gap:9px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"></path><path d="M5 21V7l8-4v18"></path><path d="M19 21V11l-6-4"></path></svg>
+        Datos del negocio
     </div>
 
-    <div class="campo">
-        <label>Dirección (opcional)</label>
-        <input @bind="direccionNegocio" placeholder="Ej: San Martín 123" />
+    <div class="sa-field">
+        <label class="sa-label">Nombre del negocio</label>
+        <input class="sa-input" @bind="nombreNegocio" placeholder="Ej: Almacén Don José" />
     </div>
 
-    <div class="campo">
-        <label>Teléfono (opcional)</label>
-        <input @bind="telefonoNegocio" placeholder="Ej: 3464123456" />
+    <div class="sa-field">
+        <label class="sa-label">Dirección (opcional)</label>
+        <input class="sa-input" @bind="direccionNegocio" placeholder="Ej: San Martín 123" />
     </div>
 
-    <button class="btn-guardar" @onclick="Guardar">💾 Guardar cambios</button>
+    <div class="sa-field">
+        <label class="sa-label">Teléfono (opcional)</label>
+        <input class="sa-input" @bind="telefonoNegocio" placeholder="Ej: 3464123456" />
+    </div>
+
+    <small style="display:block;color:var(--sa-faint);margin:-6px 0 16px;">
+        Estos datos aparecen en el encabezado del ticket de venta.
+    </small>
+
+    <button class="sa-btn sa-btn--primary sa-btn--lg" @onclick="Guardar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+        Guardar cambios
+    </button>
 </div>
 
 @if (!string.IsNullOrEmpty(mensaje))
 {
-    <p class="mensaje">@mensaje</p>
+    <div class="sa-feedback sa-feedback--ok" style="max-width:480px;">@mensaje</div>
 }
 
 </AdminOnly>
@@ -65,53 +85,3 @@
         public string Valor { get; set; } = string.Empty;
     }
 }
-
-<style>
-    h3 { margin-bottom: 1rem; }
-    h4 { margin-bottom: 1rem; }
-
-    .panel {
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 1.5rem;
-        max-width: 500px;
-        margin-bottom: 1.5rem;
-    }
-
-    .campo {
-        margin-bottom: 0.8rem;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .campo label {
-        font-weight: 600;
-        margin-bottom: 4px;
-        font-size: 14px;
-    }
-
-    .campo input {
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 15px;
-    }
-
-    .btn-guardar {
-        background-color: #3498db;
-        color: white;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 8px;
-        font-size: 15px;
-        cursor: pointer;
-        margin-top: 0.5rem;
-    }
-
-    .mensaje {
-        font-weight: 600;
-        color: #27ae60;
-        margin-top: 1rem;
-    }
-</style>

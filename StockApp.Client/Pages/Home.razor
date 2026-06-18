@@ -1,75 +1,188 @@
 ﻿@page "/"
 @inject HttpClient Http
 
-<h3>🏠 Inicio</h3>
-<button class="btn-refrescar" @onclick="CargarResumen">🔄 Actualizar</button>
+<div class="sa-page-head">
+    <div class="sa-page-title">
+        <div>
+            <h1>Inicio</h1>
+            <div class="sa-page-sub">@FechaHoy</div>
+        </div>
+    </div>
+    <div class="sa-page-actions">
+        <button class="sa-btn sa-btn--secondary" @onclick="CargarResumen">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            Actualizar
+        </button>
+    </div>
+</div>
+
 @if (cargando)
 {
-    <p>Cargando...</p>
+    <p style="color:var(--sa-sub);">Cargando...</p>
 }
 else if (resumen != null)
 {
-    <p class="fecha">📅 @DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy")</p>
-
-    <div class="tarjetas">
-        <div class="tarjeta @(resumen.CajaAbierta ? "verde" : "roja")">
-            <span class="icono">🏧</span>
-            <span class="numero">@(resumen.CajaAbierta ? "Abierta" : "Cerrada")</span>
-            <span class="label">Caja</span>
+    <!-- HERO -->
+    <div class="sa-hero" style="margin-bottom:18px;position:relative;overflow:hidden;">
+        <!-- gráfico decorativo de fondo -->
+        <svg style="position:absolute;right:160px;bottom:0;opacity:.18;" width="220" height="100" viewBox="0 0 220 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <polyline points="0,80 40,60 80,70 110,40 145,50 175,20 220,30" stroke="white" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div style="position:relative;">
+            <div class="sa-hero-label">
+                <span class="sa-hero-dot"></span>
+                VENTAS DE HOY @(resumen.CajaAbierta ? "· EN VIVO" : "")
+            </div>
+            <div class="sa-hero-value">$@resumen.TotalVentasHoy.ToString("N0")</div>
+            <div style="display:flex;align-items:center;gap:14px;margin-top:14px;">
+                <span class="sa-hero-pill">@resumen.CantidadVentasHoy transacciones</span>
+                <span style="font:500 13.5px var(--sa-font);color:var(--sa-primary-pale);">
+                    Caja @(resumen.CajaAbierta ? "abierta" : "cerrada")
+                </span>
+            </div>
         </div>
-        <div class="tarjeta azul">
-            <span class="icono">💰</span>
-            <span class="numero">$@resumen.TotalVentasHoy</span>
-            <span class="label">Ventas hoy</span>
-        </div>
-        <div class="tarjeta naranja">
-            <span class="icono">🛒</span>
-            <span class="numero">@resumen.CantidadVentasHoy</span>
-            <span class="label">Transacciones hoy</span>
-        </div>
-        <div class="tarjeta gris">
-            <span class="icono">📦</span>
-            <span class="numero">@resumen.TotalProductos</span>
-            <span class="label">Productos activos</span>
+        <div style="margin-left:auto;">
+            <a href="/ventas" class="sa-btn sa-btn--on-hero">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                Nueva venta
+            </a>
         </div>
     </div>
 
-    @if (resumen.StockBajo > 0 || resumen.Vencidos > 0 || resumen.PorVencer > 0)
-    {
-        <h4>⚠️ Alertas pendientes</h4>
-        <div class="alertas">
-            @if (resumen.StockBajo > 0)
+    <!-- KPI CARDS -->
+    <div class="sa-grid-4" style="margin-bottom:18px;">
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico @(resumen.CajaAbierta ? "sa-stat-ico--ok" : "")">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value">@(resumen.CajaAbierta ? "Abierta" : "Cerrada")</div>
+                <div class="sa-stat-label">Caja</div>
+            </div>
+        </div>
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value">@resumen.CantidadVentasHoy</div>
+                <div class="sa-stat-label">Transacciones hoy</div>
+            </div>
+        </div>
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value">@resumen.TotalProductos</div>
+                <div class="sa-stat-label">Productos activos</div>
+            </div>
+        </div>
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico @(resumen.StockBajo > 0 ? "sa-stat-ico--danger" : "")">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value" style="@(resumen.StockBajo > 0 ? "color:#DC2626;" : "")">@resumen.StockBajo</div>
+                <div class="sa-stat-label">Con stock bajo</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FILA INFERIOR: Más vendidos + Alertas + Accesos rápidos -->
+    <div style="display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start;">
+
+        <!-- Más vendidos hoy -->
+        <div class="sa-card">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+                <div class="sa-card-title">Más vendidos hoy</div>
+                <a href="/historial-ventas" style="font:600 12.5px var(--sa-font);color:var(--sa-primary-hover);text-decoration:none;">Ver todo →</a>
+            </div>
+            @if (resumen.MasVendidosHoy == null || !resumen.MasVendidosHoy.Any())
             {
-                <div class="alerta roja">
-                    📉 <strong>@resumen.StockBajo producto(s)</strong> con stock bajo
-                </div>
+                <p style="color:var(--sa-sub);font-size:13.5px;">No hay ventas registradas hoy todavía.</p>
             }
-            @if (resumen.Vencidos > 0)
+            else
             {
-                <div class="alerta roja">
-                    ❌ <strong>@resumen.Vencidos producto(s)</strong> vencidos
-                </div>
-            }
-            @if (resumen.PorVencer > 0)
-            {
-                <div class="alerta amarilla">
-                    ⏳ <strong>@resumen.PorVencer producto(s)</strong> por vencer en 30 días
-                </div>
+                var max = resumen.MasVendidosHoy.Max(x => x.Cantidad);
+                @foreach (var item in resumen.MasVendidosHoy)
+                {
+                    var pct = max > 0 ? (item.Cantidad * 100 / max) : 0;
+                    <div class="sa-top-item">
+                        <span class="sa-top-item-ico">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path></svg>
+                        </span>
+                        <div class="sa-top-item-body">
+                            <div class="sa-top-item-name">@item.Nombre</div>
+                            <div class="sa-top-item-bar">
+                                <div class="sa-top-item-bar-fill" style="width:@pct%"></div>
+                            </div>
+                        </div>
+                        <div class="sa-top-item-qty">@item.Cantidad <span style="font:500 11px var(--sa-font);color:var(--sa-sub);">u.</span></div>
+                    </div>
+                }
             }
         </div>
-    }
-    else
-    {
-        <p class="todo-bien">✅ Todo en orden, no hay alertas pendientes.</p>
-    }
 
-    <div class="accesos">
-        <h4>⚡ Accesos rápidos</h4>
-        <div class="botones">
-            <a href="/ventas" class="btn-acceso verde">💰 Nueva Venta</a>
-            <a href="/productos" class="btn-acceso azul">📦 Productos</a>
-            <a href="/caja" class="btn-acceso naranja">🏧 Caja</a>
-            <a href="/balance" class="btn-acceso gris">📊 Balance</a>
+        <!-- Columna derecha: Alertas + Accesos rápidos -->
+        <div style="display:flex;flex-direction:column;gap:16px;">
+
+            <!-- Alertas pendientes -->
+            <div class="sa-card">
+                <div class="sa-card-title" style="margin-bottom:12px;">Alertas pendientes</div>
+                @if (resumen.StockBajo == 0 && resumen.Vencidos == 0 && resumen.PorVencer == 0)
+                {
+                    <p style="color:var(--sa-sub);font-size:13.5px;">Sin alertas pendientes.</p>
+                }
+                else
+                {
+                    @if (resumen.StockBajo > 0)
+                    {
+                        <a href="/alertas" class="sa-alerta-pill sa-alerta-pill--danger">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
+                            @resumen.StockBajo con stock bajo
+                        </a>
+                    }
+                    @if (resumen.Vencidos > 0)
+                    {
+                        <a href="/alertas" class="sa-alerta-pill sa-alerta-pill--danger">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="m15 9-6 6"></path><path d="m9 9 6 6"></path></svg>
+                            @resumen.Vencidos producto(s) vencidos
+                        </a>
+                    }
+                    @if (resumen.PorVencer > 0)
+                    {
+                        <a href="/alertas" class="sa-alerta-pill sa-alerta-pill--warn">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                            @resumen.PorVencer por vencer
+                        </a>
+                    }
+                }
+            </div>
+
+            <!-- Accesos rápidos -->
+            <div class="sa-card">
+                <div class="sa-card-title" style="margin-bottom:12px;">Accesos rápidos</div>
+                <div class="sa-quick-grid">
+                    <a href="/ventas" class="sa-quick-card">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+                        Nueva venta
+                    </a>
+                    <a href="/productos" class="sa-quick-card">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
+                        Productos
+                    </a>
+                    <a href="/caja" class="sa-quick-card">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"></path><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"></path><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"></path></svg>
+                        Caja
+                    </a>
+                    <a href="/balance" class="sa-quick-card">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
+                        Balance
+                    </a>
+                </div>
+            </div>
+
         </div>
     </div>
 }
@@ -77,17 +190,27 @@ else if (resumen != null)
 @code {
     private ResumenHoy? resumen;
     private bool cargando = true;
+
+    private static string FechaHoy
+    {
+        get
+        {
+            var texto = DateTime.Now.ToString("dddd, dd 'de' MMMM 'de' yyyy");
+            return char.ToUpper(texto[0]) + texto.Substring(1);
+        }
+    }
+
     private async Task CargarResumen()
-{
-    cargando = true;
-    resumen = await Http.GetFromJsonAsync<ResumenHoy>("balance/hoy");
-    cargando = false;
-}
+    {
+        cargando = true;
+        resumen = await Http.GetFromJsonAsync<ResumenHoy>("balance/hoy");
+        cargando = false;
+    }
 
     protected override async Task OnInitializedAsync()
-{
-    await CargarResumen();
-}
+    {
+        await CargarResumen();
+    }
 
     public class ResumenHoy
     {
@@ -98,100 +221,14 @@ else if (resumen != null)
         public int Vencidos { get; set; }
         public int PorVencer { get; set; }
         public int TotalProductos { get; set; }
+        // ── NUEVO ──────────────────────────────────────────────────────────
+        // Lista de productos más vendidos hoy (top 4), viene del backend.
+        public List<MasVendidoDto> MasVendidosHoy { get; set; } = new();
+    }
+
+    public class MasVendidoDto
+    {
+        public string Nombre { get; set; } = string.Empty;
+        public int Cantidad { get; set; }
     }
 }
-
-<style>
-    h3 { margin-bottom: 0.5rem; }
-    h4 { margin-top: 1.5rem; margin-bottom: 0.8rem; }
-
-    .fecha {
-        color: #777;
-        margin-bottom: 1.5rem;
-        font-size: 15px;
-    }
-
-    .tarjetas {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-        flex-wrap: wrap;
-    }
-
-    .tarjeta {
-        flex: 1;
-        min-width: 140px;
-        border-radius: 12px;
-        padding: 1.2rem;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .tarjeta.verde  { background-color: #eafaf1; border: 2px solid #2ecc71; }
-    .tarjeta.roja   { background-color: #fdecea; border: 2px solid #e74c3c; }
-    .tarjeta.azul   { background-color: #eaf4fb; border: 2px solid #3498db; }
-    .tarjeta.naranja{ background-color: #fef5e7; border: 2px solid #e67e22; }
-    .tarjeta.gris   { background-color: #f4f4f4; border: 2px solid #95a5a6; }
-
-    .icono  { font-size: 28px; }
-    .numero { font-size: 26px; font-weight: bold; }
-    .label  { font-size: 13px; color: #555; }
-
-    .alertas {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-        margin-bottom: 1.5rem;
-        max-width: 500px;
-    }
-
-    .alerta {
-        padding: 10px 16px;
-        border-radius: 8px;
-        font-size: 15px;
-    }
-
-    .alerta.roja    { background-color: #fdecea; border-left: 4px solid #e74c3c; }
-    .alerta.amarilla{ background-color: #fef9e7; border-left: 4px solid #f1c40f; }
-
-    .todo-bien {
-        color: #27ae60;
-        font-weight: 600;
-        font-size: 16px;
-        margin-bottom: 1.5rem;
-    }
-
-    .accesos { margin-top: 1rem; }
-
-    .botones {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-    }
-
-    .btn-acceso {
-        padding: 12px 24px;
-        border-radius: 10px;
-        font-size: 16px;
-        font-weight: 600;
-        text-decoration: none;
-        text-align: center;
-    }
-
-    .btn-refrescar {
-    background: none;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    padding: 6px 12px;
-    cursor: pointer;
-    font-size: 14px;
-    margin-bottom: 1rem;
-}
-
-    .btn-acceso.verde  { background-color: #2ecc71; color: white; }
-    .btn-acceso.azul   { background-color: #3498db; color: white; }
-    .btn-acceso.naranja{ background-color: #e67e22; color: white; }
-    .btn-acceso.gris   { background-color: #95a5a6; color: white; }
-</style>

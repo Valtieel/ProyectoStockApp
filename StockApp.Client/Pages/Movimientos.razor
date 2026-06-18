@@ -1,22 +1,32 @@
 @page "/movimientos"
 @inject HttpClient Http
 
-<h3>📋 Movimientos de Stock</h3>
+<div class="sa-page-head">
+    <div class="sa-page-title">
+        <span class="sa-page-ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"></path><path d="M4 7h16"></path><path d="m16 21 4-4-4-4"></path><path d="M20 17H4"></path></svg>
+        </span>
+        <div>
+            <h1>Movimientos</h1>
+            <div class="sa-page-sub">Entradas y salidas manuales de stock</div>
+        </div>
+    </div>
+</div>
 
-<div class="panel">
-    <h4>Registrar Movimiento</h4>
+<div class="sa-card" style="margin-bottom:20px;max-width:560px;">
+    <div class="sa-card-title" style="margin-bottom:16px;">Registrar movimiento</div>
 
-    <div class="campo">
-        <label>Tipo</label>
-        <select @bind="tipo">
-            <option value="entrada">📥 Entrada (reponer stock)</option>
-            <option value="salida">📤 Salida manual (rotura, vencimiento, etc)</option>
+    <div class="sa-field">
+        <label class="sa-label">Tipo</label>
+        <select class="sa-select" @bind="tipo">
+            <option value="entrada">Entrada (reponer stock)</option>
+            <option value="salida">Salida manual (rotura, vencimiento, etc.)</option>
         </select>
     </div>
 
-    <div class="campo">
-        <label>Producto</label>
-        <select @bind="productoSeleccionadoId">
+    <div class="sa-field">
+        <label class="sa-label">Producto</label>
+        <select class="sa-select" @bind="productoSeleccionadoId">
             <option value="0">-- Seleccioná un producto --</option>
             @foreach (var p in productos)
             {
@@ -25,52 +35,78 @@
         </select>
     </div>
 
-    <div class="campo">
-        <label>Cantidad</label>
-        <input type="number" @bind="cantidad" min="1" />
+    <div class="sa-field">
+        <label class="sa-label">Cantidad</label>
+        <input class="sa-input" type="number" @bind="cantidad" min="1" />
     </div>
 
-    <div class="campo">
-        <label>Motivo (opcional)</label>
-        <input @bind="motivo" placeholder="Ej: Reposición de proveedor, mercadería rota..." />
+    <div class="sa-field">
+        <label class="sa-label">Motivo (opcional)</label>
+        <input class="sa-input" @bind="motivo" placeholder="Ej: Reposición de proveedor, mercadería rota..." />
     </div>
 
-    <button class="btn-registrar" @onclick="RegistrarMovimiento">
-        @(tipo == "entrada" ? "📥 Registrar Entrada" : "📤 Registrar Salida")
+    <button class="sa-btn @(tipo == "entrada" ? "sa-btn--ok-soft" : "sa-btn--danger-soft") sa-btn--lg" @onclick="RegistrarMovimiento">
+        @if (tipo == "entrada")
+        {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
+            <span>Registrar entrada</span>
+        }
+        else
+        {
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>
+            <span>Registrar salida</span>
+        }
     </button>
 </div>
 
 @if (!string.IsNullOrEmpty(mensaje))
 {
-    <p class="mensaje @(esError ? "error" : "")">@mensaje</p>
+    <div class="sa-feedback @(esError ? "sa-feedback--error" : "sa-feedback--ok")" style="max-width:560px;">@mensaje</div>
 }
 
 @if (movimientos.Any())
 {
-    <h4>Historial de movimientos</h4>
-    <table>
-        <thead>
-            <tr>
-                <th>Fecha</th>
-                <th>Producto</th>
-                <th>Tipo</th>
-                <th>Cantidad</th>
-                <th>Motivo</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var m in movimientos)
-            {
-                <tr class="@(m.Tipo == "entrada" ? "fila-entrada" : "fila-salida")">
-                    <td>@m.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>@m.Producto?.Nombre</td>
-                    <td>@(m.Tipo == "entrada" ? "📥 Entrada" : "📤 Salida")</td>
-                    <td>@m.Cantidad</td>
-                    <td>@(string.IsNullOrEmpty(m.Motivo) ? "-" : m.Motivo)</td>
+    <div class="sa-card-title" style="margin:24px 0 12px;">Historial de movimientos</div>
+    <div class="sa-card sa-card--flush">
+        <table class="sa-table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Producto</th>
+                    <th>Tipo</th>
+                    <th class="sa-right">Cantidad</th>
+                    <th>Motivo</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var m in movimientos)
+                {
+                    <tr class="@(m.Tipo.Equals("entrada", StringComparison.OrdinalIgnoreCase) ? "sa-mov--pago" : "sa-mov--deuda")">
+                        <td>@m.Fecha.ToString("dd/MM/yyyy HH:mm")</td>
+                        <td class="sa-strong">@m.Producto?.Nombre</td>
+                        <td>
+                            @if (m.Tipo.Equals("entrada", StringComparison.OrdinalIgnoreCase))
+                            {
+                                <span class="sa-tipo-badge sa-tipo-badge--ok">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></svg>
+                                    Entrada
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="sa-tipo-badge sa-tipo-badge--danger">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5"></path><path d="m5 12 7-7 7 7"></path></svg>
+                                    Salida
+                                </span>
+                            }
+                        </td>
+                        <td class="sa-right sa-num">@m.Cantidad</td>
+                        <td>@(string.IsNullOrEmpty(m.Motivo) ? "-" : m.Motivo)</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {
@@ -154,67 +190,3 @@
         public ProductoDto? Producto { get; set; }
     }
 }
-
-<style>
-    h3 { margin-bottom: 1rem; }
-    h4 { margin-top: 1.5rem; margin-bottom: 0.8rem; }
-
-    .panel {
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 1.5rem;
-        max-width: 600px;
-        margin-bottom: 1.5rem;
-    }
-
-    .campo {
-        margin-bottom: 0.8rem;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .campo label {
-        font-weight: 600;
-        margin-bottom: 4px;
-        font-size: 14px;
-    }
-
-    .campo input, .campo select {
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 15px;
-    }
-
-    .btn-registrar {
-        background-color: #3498db;
-        color: white;
-        border: none;
-        padding: 10px 24px;
-        border-radius: 8px;
-        font-size: 15px;
-        cursor: pointer;
-        margin-top: 0.5rem;
-    }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 1rem;
-    }
-
-    th, td {
-        padding: 8px 12px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-    }
-
-    th { background-color: #f4f4f4; font-weight: 600; }
-
-    .fila-entrada { background-color: #eafaf1; }
-    .fila-salida { background-color: #fdecea; }
-
-    .mensaje { font-weight: 600; color: #27ae60; margin-top: 1rem; }
-    .mensaje.error { color: #e74c3c; }
-</style>

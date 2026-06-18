@@ -1,41 +1,77 @@
 @using StockApp.Client.Services
-
+@using Microsoft.AspNetCore.Components.Web
 
 @page "/login"
 @inject HttpClient Http
 @inject AuthService Auth
 @inject NavigationManager Nav
 
-<div class="login-container">
-    <div class="login-box">
-        <h2>📦 StockApp</h2>
-        <p class="subtitulo">Iniciá sesión para continuar</p>
+<div class="sa-login-screen">
 
-        <div class="campo">
-            <label>Email</label>
-            <input type="email" @bind="email" placeholder="admin@stockapp.com" />
+    <!-- Columna izquierda: degradé violeta -->
+    <div class="sa-login-left">
+        <div class="sa-login-brand-top">
+            <span class="sa-login-logo">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></svg>
+            </span>
+            <span>StockApp</span>
         </div>
 
-        <div class="campo">
-            <label>Contraseña</label>
-            <input type="password" @bind="password" placeholder="••••••••" />
+        <div class="sa-login-hero">
+            <h2>Tu stock, tus ventas y tu caja, siempre al día.</h2>
+            <p>Gestioná tu negocio desde un solo lugar, simple y en tiempo real.</p>
+            <div class="sa-login-features">
+                <div class="sa-login-feature">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+                    Ventas y caja en tiempo real
+                </div>
+                <div class="sa-login-feature">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+                    Alertas de stock y vencimientos
+                </div>
+                <div class="sa-login-feature">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
+                    Reportes y balance al instante
+                </div>
+            </div>
         </div>
+    </div>
 
-        @if (!string.IsNullOrEmpty(error))
-        {
-            <p class="error">@error</p>
-        }
+    <!-- Columna derecha: formulario -->
+    <div class="sa-login-right">
+        <div class="sa-login-form-wrap">
+            <div class="sa-login-form-title">Bienvenido de nuevo</div>
+            <div class="sa-login-form-sub">Iniciá sesión para continuar.</div>
 
-        <button class="btn-login" @onclick="IniciarSesion">
-            @if (cargando)
+            <div class="sa-field">
+                <label class="sa-label">Correo electrónico</label>
+                <input class="sa-input" type="email" @bind="email" placeholder="admin@stockapp.com" />
+            </div>
+
+            <div class="sa-field">
+                <label class="sa-label">Contraseña</label>
+                <input class="sa-input" type="password" @bind="password" placeholder="••••••••" @onkeydown="OnKeyDown" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(error))
             {
-                <span>Ingresando...</span>
+                <div class="sa-login-error">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                    <span>@error</span>
+                </div>
             }
-            else
-            {
-                <span>Ingresar</span>
-            }
-        </button>
+
+            <button class="sa-btn sa-btn--primary sa-btn--lg sa-btn--full" @onclick="IniciarSesion" disabled="@cargando">
+                @if (cargando)
+                {
+                    <span>Ingresando...</span>
+                }
+                else
+                {
+                    <span>Ingresar</span>
+                }
+            </button>
+        </div>
     </div>
 </div>
 
@@ -47,9 +83,14 @@
 
     protected override async Task OnInitializedAsync()
     {
-        // Si ya está logueado redirigimos al inicio
         if (await Auth.EstaLogueado())
             Nav.NavigateTo("/");
+    }
+
+    private async Task OnKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+            await IniciarSesion();
     }
 
     private async Task IniciarSesion()
@@ -91,73 +132,3 @@
         public string Rol { get; set; } = string.Empty;
     }
 }
-
-<style>
-    .login-container {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        min-height: 80vh;
-    }
-
-    .login-box {
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 12px;
-        padding: 2rem;
-        width: 100%;
-        max-width: 400px;
-        text-align: center;
-    }
-
-    h2 {
-        font-size: 28px;
-        margin-bottom: 0.5rem;
-    }
-
-    .subtitulo {
-        color: #777;
-        margin-bottom: 1.5rem;
-        font-size: 15px;
-    }
-
-    .campo {
-        margin-bottom: 1rem;
-        text-align: left;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .campo label {
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-    .campo input {
-        padding: 10px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-size: 15px;
-        width: 100%;
-        box-sizing: border-box;
-    }
-
-    .btn-login {
-        background-color: #3498db;
-        color: white;
-        border: none;
-        padding: 12px;
-        border-radius: 8px;
-        font-size: 16px;
-        cursor: pointer;
-        width: 100%;
-        margin-top: 0.5rem;
-    }
-
-    .error {
-        color: #e74c3c;
-        font-size: 14px;
-        margin-bottom: 0.5rem;
-    }
-</style>

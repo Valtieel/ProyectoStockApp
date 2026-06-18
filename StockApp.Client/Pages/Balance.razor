@@ -1,105 +1,136 @@
 @page "/balance"
 @inject HttpClient Http
 <AdminOnly>
-<h3>📊 Balance Mensual</h3>
 
-<div class="panel">
-    <div class="filtros">
-        <div class="campo">
-            <label>Año</label>
-            <input type="number" @bind="año" min="2024" max="2030" />
+<div class="sa-page-head">
+    <div class="sa-page-title">
+        <span class="sa-page-ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
+        </span>
+        <div>
+            <h1>Balance mensual</h1>
+            <div class="sa-page-sub">Resumen de ventas por período</div>
         </div>
-        <div class="campo">
-            <label>Mes</label>
-            <select @bind="mes">
-                <option value="1">Enero</option>
-                <option value="2">Febrero</option>
-                <option value="3">Marzo</option>
-                <option value="4">Abril</option>
-                <option value="5">Mayo</option>
-                <option value="6">Junio</option>
-                <option value="7">Julio</option>
-                <option value="8">Agosto</option>
-                <option value="9">Septiembre</option>
-                <option value="10">Octubre</option>
-                <option value="11">Noviembre</option>
-                <option value="12">Diciembre</option>
-            </select>
-        </div>
-        <button class="btn-buscar" @onclick="CargarBalance">🔍 Ver balance</button>
     </div>
+</div>
+
+<div class="sa-card" style="margin-bottom:24px;display:flex;gap:14px;align-items:flex-end;flex-wrap:wrap;">
+    <div class="sa-field" style="margin-bottom:0;">
+        <label class="sa-label">Año</label>
+        <input class="sa-input" type="number" @bind="año" min="2024" max="2030" style="width:120px;" />
+    </div>
+    <div class="sa-field" style="margin-bottom:0;">
+        <label class="sa-label">Mes</label>
+        <select class="sa-select" @bind="mes" style="width:160px;">
+            <option value="1">Enero</option>
+            <option value="2">Febrero</option>
+            <option value="3">Marzo</option>
+            <option value="4">Abril</option>
+            <option value="5">Mayo</option>
+            <option value="6">Junio</option>
+            <option value="7">Julio</option>
+            <option value="8">Agosto</option>
+            <option value="9">Septiembre</option>
+            <option value="10">Octubre</option>
+            <option value="11">Noviembre</option>
+            <option value="12">Diciembre</option>
+        </select>
+    </div>
+    <button class="sa-btn sa-btn--primary" @onclick="CargarBalance">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        Ver balance
+    </button>
 </div>
 
 @if (cargando)
 {
-    <p>Cargando...</p>
+    <p style="color:var(--sa-sub);">Cargando...</p>
 }
 else if (balance != null)
 {
-    <div class="tarjetas">
-        <div class="tarjeta verde">
-            <span class="numero">$@balance.TotalVentas</span>
-            <span class="label">Total vendido</span>
+    <div class="sa-grid-3" style="margin-bottom:24px;">
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico sa-stat-ico--ok">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value">$@balance.TotalVentas</div>
+                <div class="sa-stat-label">Total vendido</div>
+            </div>
         </div>
-        <div class="tarjeta azul">
-            <span class="numero">@balance.CantidadVentas</span>
-            <span class="label">Cantidad de ventas</span>
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value">@balance.CantidadVentas</div>
+                <div class="sa-stat-label">Cantidad de ventas</div>
+            </div>
         </div>
         @if (balance.ProductoMasVendido != null)
         {
-            <div class="tarjeta naranja">
-                <span class="numero">@balance.ProductoMasVendido.Producto</span>
-                <span class="label">Producto más vendido</span>
+            <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+                <span class="sa-stat-ico sa-stat-ico--warn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3 7h7l-5.5 4.5L18 21l-6-4-6 4 1.5-7.5L2 9h7z"></path></svg>
+                </span>
+                <div>
+                    <div class="sa-stat-value" style="font-size:18px;">@balance.ProductoMasVendido.Producto</div>
+                    <div class="sa-stat-label">Producto más vendido</div>
+                </div>
             </div>
         }
     </div>
 
     @if (balance.PorMetodoPago.Any())
     {
-        <h4>💳 Por método de pago</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>Método</th>
-                    <th>Cantidad</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var m in balance.PorMetodoPago)
-                {
+        <div class="sa-card-title" style="margin-bottom:12px;">Por método de pago</div>
+        <div class="sa-card sa-card--flush" style="margin-bottom:24px;max-width:600px;">
+            <table class="sa-table">
+                <thead>
                     <tr>
-                        <td>@m.Metodo</td>
-                        <td>@m.Cantidad</td>
-                        <td>$@m.Total</td>
+                        <th>Método</th>
+                        <th class="sa-right">Cantidad</th>
+                        <th class="sa-right">Total</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var m in balance.PorMetodoPago)
+                    {
+                        <tr>
+                            <td class="sa-strong">@m.Metodo</td>
+                            <td class="sa-right sa-num">@m.Cantidad</td>
+                            <td class="sa-right sa-num">$@m.Total</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 
     @if (balance.VentasPorDia.Any())
     {
-        <h4>📅 Ventas por día</h4>
-        <table>
-            <thead>
-                <tr>
-                    <th>Día</th>
-                    <th>Ventas</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var d in balance.VentasPorDia)
-                {
+        <div class="sa-card-title" style="margin-bottom:12px;">Ventas por día</div>
+        <div class="sa-card sa-card--flush" style="max-width:600px;">
+            <table class="sa-table">
+                <thead>
                     <tr>
-                        <td>@d.Dia</td>
-                        <td>@d.Cantidad</td>
-                        <td>$@d.Total</td>
+                        <th>Día</th>
+                        <th class="sa-right">Ventas</th>
+                        <th class="sa-right">Total</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var d in balance.VentasPorDia)
+                    {
+                        <tr>
+                            <td class="sa-strong">@d.Dia</td>
+                            <td class="sa-right sa-num">@d.Cantidad</td>
+                            <td class="sa-right sa-num">$@d.Total</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 }
 </AdminOnly>
@@ -145,88 +176,3 @@ else if (balance != null)
         public decimal Total { get; set; }
     }
 }
-
-<style>
-    h3 { margin-bottom: 1rem; }
-    h4 { margin-top: 1.5rem; margin-bottom: 0.8rem; }
-
-    .panel {
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .filtros {
-        display: flex;
-        gap: 1rem;
-        align-items: flex-end;
-    }
-
-    .campo {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .campo label {
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-    .campo input, .campo select {
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 15px;
-    }
-
-    .btn-buscar {
-        background-color: #3498db;
-        color: white;
-        border: none;
-        padding: 8px 20px;
-        border-radius: 6px;
-        font-size: 15px;
-        cursor: pointer;
-    }
-
-    .tarjetas {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .tarjeta {
-        flex: 1;
-        border-radius: 10px;
-        padding: 1.2rem;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-    }
-
-    .tarjeta.verde { background-color: #eafaf1; border: 2px solid #2ecc71; }
-    .tarjeta.azul { background-color: #eaf4fb; border: 2px solid #3498db; }
-    .tarjeta.naranja { background-color: #fef5e7; border: 2px solid #e67e22; }
-
-    .numero { font-size: 28px; font-weight: bold; }
-    .label { font-size: 13px; color: #555; }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 1rem;
-        max-width: 600px;
-    }
-
-    th, td {
-        padding: 8px 12px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-    }
-
-    th { background-color: #f4f4f4; font-weight: 600; }
-</style>

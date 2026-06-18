@@ -1,109 +1,146 @@
 @page "/historial-ventas"
 @inject HttpClient Http
 
-<h3>📋 Historial de Ventas</h3>
+<div class="sa-page-head">
+    <div class="sa-page-title">
+        <span class="sa-page-ico">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="m19 9-5 5-4-4-3 3"></path></svg>
+        </span>
+        <div>
+            <h1>Historial de ventas</h1>
+            <div class="sa-page-sub">Consultá ventas pasadas por período</div>
+        </div>
+    </div>
+</div>
 
-<div class="panel">
-    <div class="filtros">
-        <div class="campo">
-            <label>Desde</label>
-            <div class="fecha-filtro">
-                <input type="number" @bind="diaDesde" min="1" max="31" placeholder="Día" />
-                <input type="number" @bind="mesDesde" min="1" max="12" placeholder="Mes" />
-                <input type="number" @bind="anioDesde" min="2024" max="2099" placeholder="Año" />
+<div class="sa-card" style="margin-bottom:24px;">
+    <div style="display:flex;gap:24px;align-items:flex-end;flex-wrap:wrap;">
+        <div>
+            <label class="sa-label">Desde</label>
+            <div class="sa-inline-fields" style="margin-top:7px;">
+                <input class="sa-input" type="number" @bind="diaDesde" min="1" max="31" placeholder="Día" style="width:70px;" />
+                <input class="sa-input" type="number" @bind="mesDesde" min="1" max="12" placeholder="Mes" style="width:70px;" />
+                <input class="sa-input" type="number" @bind="anioDesde" min="2024" max="2099" placeholder="Año" style="width:90px;" />
             </div>
         </div>
-        <div class="campo">
-            <label>Hasta</label>
-            <div class="fecha-filtro">
-                <input type="number" @bind="diaHasta" min="1" max="31" placeholder="Día" />
-                <input type="number" @bind="mesHasta" min="1" max="12" placeholder="Mes" />
-                <input type="number" @bind="anioHasta" min="2024" max="2099" placeholder="Año" />
+        <div>
+            <label class="sa-label">Hasta</label>
+            <div class="sa-inline-fields" style="margin-top:7px;">
+                <input class="sa-input" type="number" @bind="diaHasta" min="1" max="31" placeholder="Día" style="width:70px;" />
+                <input class="sa-input" type="number" @bind="mesHasta" min="1" max="12" placeholder="Mes" style="width:70px;" />
+                <input class="sa-input" type="number" @bind="anioHasta" min="2024" max="2099" placeholder="Año" style="width:90px;" />
             </div>
         </div>
-        <button class="btn-buscar" @onclick="CargarVentas">🔍 Buscar</button>
-        <button class="btn-hoy" @onclick="CargarHoy">📅 Hoy</button>
+        <button class="sa-btn sa-btn--primary" @onclick="CargarVentas">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            Buscar
+        </button>
+        <button class="sa-btn sa-btn--secondary" @onclick="CargarHoy">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+            Hoy
+        </button>
     </div>
 </div>
 
 @if (cargando)
 {
-    <p>Cargando...</p>
+    <p style="color:var(--sa-sub);">Cargando...</p>
 }
 else if (ventas == null || !ventas.Any())
 {
-    <p>No hay ventas en el período seleccionado.</p>
+    <p style="color:var(--sa-sub);">No hay ventas en el período seleccionado.</p>
 }
 else
 {
-    <div class="resumen">
-        <div class="resumen-item">
-            <span class="resumen-numero">@ventas.Count</span>
-            <span class="resumen-label">Ventas</span>
+    <div class="sa-grid-2" style="margin-bottom:24px;">
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value">@ventas.Count</div>
+                <div class="sa-stat-label">Ventas</div>
+            </div>
         </div>
-        <div class="resumen-item">
-            <span class="resumen-numero">$@ventas.Sum(v => v.Total)</span>
-            <span class="resumen-label">Total recaudado</span>
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico sa-stat-ico--ok">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value">$@ventas.Sum(v => v.Total)</div>
+                <div class="sa-stat-label">Total recaudado</div>
+            </div>
         </div>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Fecha</th>
-                <th>Hora</th>
-                <th>Productos</th>
-                <th>Método de pago</th>
-                <th>Total</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var v in ventas)
-            {
+    <div class="sa-card sa-card--flush">
+        <table class="sa-table">
+            <thead>
                 <tr>
-                    <td>@v.Fecha.ToString("dd/MM/yyyy")</td>
-                    <td>@v.Fecha.ToString("HH:mm")</td>
-                    <td>@v.Detalles.Count producto(s)</td>
-                    <td>@v.MetodoPago</td>
-                    <td>$@v.Total</td>
-                    <td>
-                        <button class="btn-ver" @onclick="() => ToggleDetalle(v.Id)">
-                            @(ventaExpandida == v.Id ? "▲ Cerrar" : "▼ Ver detalle")
-                        </button>
-                    </td>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Productos</th>
+                    <th>Método de pago</th>
+                    <th class="sa-right">Total</th>
+                    <th class="sa-center"></th>
                 </tr>
-                @if (ventaExpandida == v.Id)
+            </thead>
+            <tbody>
+                @foreach (var v in ventas)
                 {
-                    <tr class="fila-detalle">
-                        <td colspan="6">
-                            <table class="tabla-detalle">
-                                <thead>
-                                    <tr>
-                                        <th>Producto</th>
-                                        <th>Cantidad</th>
-                                        <th>Precio unitario</th>
-                                        <th>Subtotal</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var d in v.Detalles)
-                                    {
-                                        <tr>
-                                            <td>@d.Producto?.Nombre</td>
-                                            <td>@d.Cantidad</td>
-                                            <td>$@d.PrecioUnitario</td>
-                                            <td>$@(d.Cantidad * d.PrecioUnitario)</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
+                    <tr>
+                        <td>@v.Fecha.ToString("dd/MM/yyyy")</td>
+                        <td>@v.Fecha.ToString("HH:mm")</td>
+                        <td>@v.Detalles.Count producto(s)</td>
+                        <td class="sa-strong">@v.MetodoPago</td>
+                        <td class="sa-right sa-num">$@v.Total</td>
+                        <td class="sa-center">
+                            <button class="sa-btn sa-btn--soft sa-btn--sm" @onclick="() => ToggleDetalle(v.Id)">
+                                @if (ventaExpandida == v.Id)
+                                {
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+                                    <span>Cerrar</span>
+                                }
+                                else
+                                {
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                    <span>Ver detalle</span>
+                                }
+                            </button>
                         </td>
                     </tr>
+                    @if (ventaExpandida == v.Id)
+                    {
+                        <tr class="sa-row--detalle">
+                            <td colspan="6">
+                                <table class="sa-subtable">
+                                    <thead>
+                                        <tr>
+                                            <th>Producto</th>
+                                            <th>Cantidad</th>
+                                            <th>Precio unitario</th>
+                                            <th>Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var d in v.Detalles)
+                                        {
+                                            <tr>
+                                                <td>@d.Producto?.Nombre</td>
+                                                <td>@d.Cantidad</td>
+                                                <td>$@d.PrecioUnitario</td>
+                                                <td>$@(d.Cantidad * d.PrecioUnitario)</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    }
                 }
-            }
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
 }
 
 @code {
@@ -181,129 +218,3 @@ else
         public string Nombre { get; set; } = string.Empty;
     }
 }
-
-<style>
-    h3 { margin-bottom: 1rem; }
-
-    .panel {
-        background: #f9f9f9;
-        border: 1px solid #ddd;
-        border-radius: 10px;
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .filtros {
-        display: flex;
-        gap: 1rem;
-        align-items: flex-end;
-        flex-wrap: wrap;
-    }
-
-    .campo {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .campo label {
-        font-weight: 600;
-        font-size: 14px;
-    }
-
-    .fecha-filtro {
-        display: flex;
-        gap: 6px;
-    }
-
-    .fecha-filtro input {
-        width: 60px;
-        padding: 8px;
-        border: 1px solid #ccc;
-        border-radius: 6px;
-        font-size: 15px;
-        text-align: center;
-    }
-
-    .btn-buscar {
-        background-color: #3498db;
-        color: white;
-        border: none;
-        padding: 8px 20px;
-        border-radius: 6px;
-        font-size: 15px;
-        cursor: pointer;
-    }
-
-    .btn-hoy {
-        background-color: #2ecc71;
-        color: white;
-        border: none;
-        padding: 8px 20px;
-        border-radius: 6px;
-        font-size: 15px;
-        cursor: pointer;
-    }
-
-    .resumen {
-        display: flex;
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .resumen-item {
-        background: #eaf4fb;
-        border: 2px solid #3498db;
-        border-radius: 10px;
-        padding: 1rem 1.5rem;
-        text-align: center;
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .resumen-numero { font-size: 24px; font-weight: bold; }
-    .resumen-label { font-size: 13px; color: #555; }
-
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1rem;
-    }
-
-    th, td {
-        padding: 10px 14px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-    }
-
-    th { background-color: #f4f4f4; font-weight: 600; }
-    tr:hover { background-color: #f9f9f9; }
-
-    .fila-detalle { background-color: #f9f9f9; }
-    .fila-detalle:hover { background-color: #f9f9f9; }
-
-    .tabla-detalle {
-        width: 100%;
-        border-collapse: collapse;
-        margin: 8px 0;
-    }
-
-    .tabla-detalle th, .tabla-detalle td {
-        padding: 6px 10px;
-        border-bottom: 1px dotted #ddd;
-        font-size: 14px;
-    }
-
-    .tabla-detalle th { background-color: #eee; }
-
-    .btn-ver {
-        background: none;
-        border: 1px solid #3498db;
-        color: #3498db;
-        padding: 4px 10px;
-        border-radius: 6px;
-        font-size: 13px;
-        cursor: pointer;
-    }
-</style>
