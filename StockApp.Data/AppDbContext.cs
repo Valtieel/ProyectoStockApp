@@ -18,6 +18,7 @@ public class AppDbContext : DbContext
     public DbSet<CuentaCorriente> CuentaCorrientes {get; set;}
     public DbSet<Proveedor> Proveedores {get; set;}
     public DbSet<Configuracion> Configuraciones { get; set; }
+    public DbSet<MovimientoCaja> MovimientosCaja { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -50,6 +51,13 @@ public class AppDbContext : DbContext
         {
             entity.Property(c => c.MontoInicial).HasPrecision(10, 2);
             entity.Property(c => c.MontoFinal).HasPrecision(10, 2);
+        });
+
+        modelBuilder.Entity<MovimientoCaja>(entity =>
+        {
+            entity.Property(m => m.Monto).HasPrecision(10, 2);
+            entity.Property(m => m.Tipo).HasMaxLength(20);
+            entity.Property(m => m.Descripcion).HasMaxLength(200);
         });
     }
 }

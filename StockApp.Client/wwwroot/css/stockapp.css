@@ -272,7 +272,7 @@ body {
 .sa-page-title { display: flex; align-items: center; gap: 13px; }
 .sa-page-ico {
   width: 40px; height: 40px; border-radius: var(--sa-radius-field); flex: none;
-  background: var(--sa-primary-soft); color: var(--sa-primary-soft-ink);
+  background: var(--sa-primary); color: #fff;
   display: flex; align-items: center; justify-content: center; font-size: 21px;
 }
 .sa-page-title h1 { font: 700 24px var(--sa-font-display); letter-spacing: -0.02em; color: var(--sa-ink); margin: 0; }
@@ -472,6 +472,7 @@ body {
 .sa-table tr.sa-row--warn { background: var(--sa-warn-soft); }
 .sa-table .sa-text-danger { color: var(--sa-danger-ink); font-weight: 700; }
 .sa-table .sa-text-ok { color: var(--sa-ok-ink); font-weight: 700; }
+.sa-table .sa-text-warn { color: var(--sa-warn-ink); font-weight: 700; }
 
 /* botones de acción para cuenta corriente */
 .sa-btn--danger-soft { background: var(--sa-danger-soft); color: var(--sa-danger-ink); }
@@ -479,7 +480,23 @@ body {
 
 /* fila de movimiento (deuda / pago) en historial de cuenta corriente */
 
-/* ── Home: más vendidos hoy ────────────────────── */
+/* ── Caja: desglose por método de pago con barras ──────── */
+.sa-metodo-row { margin-bottom: 14px; }
+.sa-metodo-row:last-child { margin-bottom: 0; }
+.sa-metodo-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
+.sa-metodo-nombre { font: 600 13.5px var(--sa-font); color: var(--sa-ink); }
+.sa-metodo-monto { font: 700 14px var(--sa-font-display); color: var(--sa-ink); }
+.sa-metodo-bar { height: 6px; border-radius: 999px; background: var(--sa-border); }
+.sa-metodo-bar-fill { height: 100%; border-radius: 999px; background: var(--sa-primary); }
+
+/* ── Caja: badge según tipo de movimiento (venta / ingreso / egreso) ── */
+.sa-mov-caja-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0;
+}
+.sa-mov-caja-badge--venta   { background: var(--sa-primary-soft); color: var(--sa-primary-hover); }
+.sa-mov-caja-badge--ingreso { background: var(--sa-ok-soft); color: var(--sa-ok-ink); }
+.sa-mov-caja-badge--egreso  { background: var(--sa-danger-soft); color: var(--sa-danger-ink); }
 .sa-top-item {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 0; border-bottom: 1px solid var(--sa-border);

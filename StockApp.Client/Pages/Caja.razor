@@ -17,7 +17,7 @@
 {
     <p style="color:var(--sa-sub);">Cargando...</p>
 }
-else if (cajaActual == null)
+else if (detalle == null)
 {
     <div class="sa-card" style="max-width:480px;">
         <div class="sa-card-title" style="margin-bottom:6px;">No hay caja abierta</div>
@@ -44,28 +44,180 @@ else
                 <span class="sa-hero-dot"></span>
                 CAJA · ABIERTA
             </div>
-            <div class="sa-hero-value">$@cajaActual.MontoInicial</div>
+            <div class="sa-hero-value">$@detalle.TotalVentas.ToString("N0")</div>
             <div style="display:flex;align-items:center;gap:14px;margin-top:14px;">
+                <span class="sa-hero-pill">@detalle.CantidadVentas transacciones</span>
                 <span style="font:500 13.5px var(--sa-font);color:var(--sa-primary-pale);">
-                    Monto inicial · Abierta desde @cajaActual.FechaApertura.ToString("dd/MM/yyyy HH:mm")
+                    Abierta desde @detalle.FechaApertura.ToString("HH:mm")
                 </span>
+            </div>
+        </div>
+        <div style="margin-left:auto;display:flex;gap:10px;">
+            <button class="sa-btn sa-btn--on-hero" @onclick="() => mostrarMovimiento = !mostrarMovimiento">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                Registrar movimiento
+            </button>
+            <button class="sa-btn sa-btn--on-hero" @onclick="MostrarCierre">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                Cerrar caja
+            </button>
+        </div>
+    </div>
+
+    @if (mostrarMovimiento)
+    {
+        <div class="sa-card" style="max-width:480px;margin-bottom:18px;">
+            <div class="sa-card-title" style="margin-bottom:14px;">Registrar movimiento manual</div>
+            <div class="sa-option-cards">
+                <div class="sa-option-card @(tipoMovimiento == "ingreso" ? "is-active" : "")" @onclick='() => tipoMovimiento = "ingreso"'>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+                    Ingreso
+                </div>
+                <div class="sa-option-card @(tipoMovimiento == "egreso" ? "is-active" : "")" @onclick='() => tipoMovimiento = "egreso"'>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path></svg>
+                    Egreso
+                </div>
+            </div>
+            <div class="sa-field">
+                <label class="sa-label">Monto</label>
+                <input class="sa-input" type="number" @bind="montoMovimiento" placeholder="Ej: 5000" />
+            </div>
+            <div class="sa-field">
+                <label class="sa-label">Descripción</label>
+                <input class="sa-input" @bind="descripcionMovimiento" placeholder="Ej: Retiro de caja, Pago a proveedor..." />
+            </div>
+            <button class="sa-btn @(tipoMovimiento == "ingreso" ? "sa-btn--ok-soft" : "sa-btn--danger-soft") sa-btn--lg" @onclick="RegistrarMovimiento">
+                Registrar @(tipoMovimiento == "ingreso" ? "ingreso" : "egreso")
+            </button>
+        </div>
+    }
+
+    <!-- KPIs -->
+    <div class="sa-grid-3" style="margin-bottom:18px;">
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value">$@detalle.MontoInicial.ToString("N0")</div>
+                <div class="sa-stat-label">Monto inicial</div>
+            </div>
+        </div>
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico sa-stat-ico--ok">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value">$@detalle.TotalVentas.ToString("N0")</div>
+                <div class="sa-stat-label">Ingresos del día</div>
+            </div>
+        </div>
+        <div class="sa-card sa-stat sa-lift" style="flex-direction:row;">
+            <span class="sa-stat-ico">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="21" r="1"></circle><circle cx="19" cy="21" r="1"></circle><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"></path></svg>
+            </span>
+            <div>
+                <div class="sa-stat-value">$@detalle.TicketPromedio.ToString("N0")</div>
+                <div class="sa-stat-label">Ticket promedio</div>
             </div>
         </div>
     </div>
 
-    <div class="sa-card" style="max-width:480px;">
-        <div class="sa-card-title" style="margin-bottom:6px;">Cerrar caja</div>
+    <!-- Movimientos + Método de pago -->
+    <div style="display:grid;grid-template-columns:1fr 340px;gap:16px;align-items:start;">
+
+        <div class="sa-card">
+            <div class="sa-card-title" style="margin-bottom:14px;">Movimientos del turno</div>
+            @if (!detalle.Movimientos.Any())
+            {
+                <p style="color:var(--sa-sub);font-size:13.5px;">Todavía no hay movimientos registrados en este turno.</p>
+            }
+            else
+            {
+                <div class="sa-card sa-card--flush" style="box-shadow:none;border:1px solid var(--sa-border);">
+                    <table class="sa-table">
+                        <thead>
+                            <tr>
+                                <th></th>
+                                <th>Hora</th>
+                                <th>Descripción</th>
+                                <th class="sa-right">Monto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var m in detalle.Movimientos)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="sa-mov-caja-badge @ClaseBadge(m.Tipo)">
+                                            @if (m.EsIngreso)
+                                            {
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m17 11-5-5-5 5"></path><path d="M12 6v12"></path></svg>
+                                            }
+                                            else
+                                            {
+                                                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m7 13 5 5 5-5"></path><path d="M12 18V6"></path></svg>
+                                            }
+                                        </span>
+                                    </td>
+                                    <td>@m.Fecha.ToString("HH:mm")</td>
+                                    <td class="sa-strong">@m.Descripcion</td>
+                                    <td class="sa-right sa-num @(m.EsIngreso ? "sa-text-ok" : "sa-text-danger")">
+                                        @(m.EsIngreso ? "+" : "−")$@m.Monto.ToString("N0")
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
+        <div class="sa-card">
+            <div class="sa-card-title" style="margin-bottom:14px;">Ingresos por método</div>
+            @if (!detalle.PorMetodoPago.Any())
+            {
+                <p style="color:var(--sa-sub);font-size:13.5px;">Sin datos todavía.</p>
+            }
+            else
+            {
+                var max = detalle.PorMetodoPago.Max(x => x.Total);
+                @foreach (var m in detalle.PorMetodoPago)
+                {
+                    var pct = max > 0 ? (m.Total * 100 / max) : 0;
+                    <div class="sa-metodo-row">
+                        <div class="sa-metodo-head">
+                            <span class="sa-metodo-nombre">@m.Metodo</span>
+                            <span class="sa-metodo-monto">$@m.Total.ToString("N0")</span>
+                        </div>
+                        <div class="sa-metodo-bar">
+                            <div class="sa-metodo-bar-fill" style="width:@pct%"></div>
+                        </div>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+}
+
+@if (mostrarCierre)
+{
+    <div class="sa-card" style="max-width:480px;margin-top:20px;border:1.5px solid var(--sa-primary-lighter);">
+        <div class="sa-card-title" style="margin-bottom:6px;">Cierre de caja · Arqueo</div>
         <p style="font:500 13.5px var(--sa-font);color:var(--sa-sub);margin:0 0 16px;">
-            Contá el dinero en caja y registrá el monto final.
+            Contá el efectivo en caja y confirmá el cierre del turno.
         </p>
         <div class="sa-field">
             <label class="sa-label">Monto final contado</label>
             <input class="sa-input" type="number" @bind="montoFinal" placeholder="Ej: 25000" />
         </div>
-        <button class="sa-btn sa-btn--primary sa-btn--lg" @onclick="CerrarCaja">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            Cerrar caja
-        </button>
+        <div style="display:flex;gap:10px;">
+            <button class="sa-btn sa-btn--primary sa-btn--lg" @onclick="CerrarCaja">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                Confirmar cierre
+            </button>
+            <button class="sa-btn sa-btn--secondary" @onclick="() => mostrarCierre = false">Cancelar</button>
+        </div>
     </div>
 }
 
@@ -75,23 +227,37 @@ else
         <div class="sa-card-title" style="margin-bottom:10px;">Resumen del cierre</div>
         <div class="sa-info-row">
             <span>Monto inicial</span>
-            <strong>$@resumenCierre.MontoInicial</strong>
+            <strong>$@resumenCierre.MontoInicial.ToString("N0")</strong>
         </div>
         <div class="sa-info-row">
             <span>Total ventas</span>
-            <strong>$@resumenCierre.TotalVentas</strong>
+            <strong>$@resumenCierre.TotalVentas.ToString("N0")</strong>
         </div>
+        @if (resumenCierre.TotalIngresosManuales > 0)
+        {
+            <div class="sa-info-row">
+                <span>Ingresos manuales</span>
+                <strong>$@resumenCierre.TotalIngresosManuales.ToString("N0")</strong>
+            </div>
+        }
+        @if (resumenCierre.TotalEgresosManuales > 0)
+        {
+            <div class="sa-info-row">
+                <span>Egresos manuales</span>
+                <strong>−$@resumenCierre.TotalEgresosManuales.ToString("N0")</strong>
+            </div>
+        }
         <div class="sa-info-row">
             <span>Monto esperado</span>
-            <strong>$@resumenCierre.MontoEsperado</strong>
+            <strong>$@resumenCierre.MontoEsperado.ToString("N0")</strong>
         </div>
         <div class="sa-info-row">
             <span>Monto real contado</span>
-            <strong>$@resumenCierre.MontoReal</strong>
+            <strong>$@resumenCierre.MontoReal.ToString("N0")</strong>
         </div>
         <div class="sa-info-row @(resumenCierre.Diferencia == 0 ? "sa-info--ok" : "sa-info--danger")">
             <span>Diferencia</span>
-            <strong>$@resumenCierre.Diferencia</strong>
+            <strong>$@resumenCierre.Diferencia.ToString("N0")</strong>
         </div>
     </div>
 }
@@ -102,28 +268,33 @@ else
 }
 
 @code {
-    private CajaDto? cajaActual;
+    private DetalleCajaDto? detalle;
     private ResumenCierre? resumenCierre;
     private decimal montoInicial;
     private decimal montoFinal;
     private bool cargando = true;
+    private bool mostrarCierre = false;
+    private bool mostrarMovimiento = false;
+    private string tipoMovimiento = "ingreso";
+    private decimal montoMovimiento;
+    private string descripcionMovimiento = string.Empty;
     private string mensaje = string.Empty;
 
     protected override async Task OnInitializedAsync()
     {
-        await CargarCajaActual();
+        await CargarDetalle();
     }
 
-    private async Task CargarCajaActual()
+    private async Task CargarDetalle()
     {
         cargando = true;
         try
         {
-            cajaActual = await Http.GetFromJsonAsync<CajaDto>("cajas/actual");
+            detalle = await Http.GetFromJsonAsync<DetalleCajaDto>("cajas/actual/detalle");
         }
         catch
         {
-            cajaActual = null;
+            detalle = null;
         }
         cargando = false;
     }
@@ -132,7 +303,47 @@ else
     {
         await Http.PostAsJsonAsync("cajas/abrir", montoInicial);
         mensaje = "✅ Caja abierta correctamente.";
-        await CargarCajaActual();
+        await CargarDetalle();
+    }
+
+    private async Task RegistrarMovimiento()
+    {
+        if (montoMovimiento <= 0)
+        {
+            mensaje = "❌ Ingresá un monto válido.";
+            return;
+        }
+
+        var request = new
+        {
+            Tipo = tipoMovimiento,
+            Monto = montoMovimiento,
+            Descripcion = descripcionMovimiento
+        };
+
+        var response = await Http.PostAsJsonAsync("cajas/movimiento", request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            mensaje = tipoMovimiento == "ingreso"
+                ? "✅ Ingreso registrado correctamente."
+                : "✅ Egreso registrado correctamente.";
+            montoMovimiento = 0;
+            descripcionMovimiento = string.Empty;
+            mostrarMovimiento = false;
+            await CargarDetalle();
+        }
+        else
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            mensaje = $"❌ {error}";
+        }
+    }
+
+    private void MostrarCierre()
+    {
+        mostrarCierre = true;
+        resumenCierre = null;
     }
 
     private async Task CerrarCaja()
@@ -140,21 +351,56 @@ else
         var response = await Http.PostAsJsonAsync("cajas/cerrar", montoFinal);
         resumenCierre = await response.Content.ReadFromJsonAsync<ResumenCierre>();
         mensaje = "🔒 Caja cerrada correctamente.";
-        cajaActual = null;
+        mostrarCierre = false;
+        detalle = null;
     }
 
-    public class CajaDto
+    // Determina la clase de color del badge según el tipo de movimiento
+    private string ClaseBadge(string tipo) => tipo switch
+    {
+        "venta" => "sa-mov-caja-badge--venta",
+        "ingreso" => "sa-mov-caja-badge--ingreso",
+        "egreso" => "sa-mov-caja-badge--egreso",
+        _ => ""
+    };
+
+    public class DetalleCajaDto
     {
         public int Id { get; set; }
         public decimal MontoInicial { get; set; }
         public DateTime FechaApertura { get; set; }
-        public bool Abierta { get; set; }
+        public decimal TotalVentas { get; set; }
+        public int CantidadVentas { get; set; }
+        public decimal TicketPromedio { get; set; }
+        public decimal TotalIngresosManuales { get; set; }
+        public decimal TotalEgresosManuales { get; set; }
+        public List<MetodoPagoDto> PorMetodoPago { get; set; } = new();
+        public List<MovimientoDto> Movimientos { get; set; } = new();
+    }
+
+    public class MetodoPagoDto
+    {
+        public string Metodo { get; set; } = string.Empty;
+        public decimal Total { get; set; }
+        public int Cantidad { get; set; }
+    }
+
+    public class MovimientoDto
+    {
+        public int Id { get; set; }
+        public string Tipo { get; set; } = string.Empty;
+        public string Descripcion { get; set; } = string.Empty;
+        public decimal Monto { get; set; }
+        public bool EsIngreso { get; set; }
+        public DateTime Fecha { get; set; }
     }
 
     public class ResumenCierre
     {
         public decimal MontoInicial { get; set; }
         public decimal TotalVentas { get; set; }
+        public decimal TotalIngresosManuales { get; set; }
+        public decimal TotalEgresosManuales { get; set; }
         public decimal MontoEsperado { get; set; }
         public decimal MontoReal { get; set; }
         public decimal Diferencia { get; set; }

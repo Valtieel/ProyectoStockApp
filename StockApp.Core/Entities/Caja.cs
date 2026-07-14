@@ -10,4 +10,5 @@ public class Caja
     public bool Abierta { get; set; } = true;
 
     public ICollection<Venta> Ventas { get; set; } = new List<Venta>();
+    public ICollection<MovimientoCaja> MovimientosCaja { get; set; } = new List<MovimientoCaja>();
 }

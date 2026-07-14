@@ -150,7 +150,7 @@ else
                         <td class="sa-right sa-num">$@p.Costo</td>
                         <td class="sa-right sa-num">@p.StockActual</td>
                         <td class="sa-right sa-num">@p.StockMinimo</td>
-                        <td>@(p.FechaVencimiento.HasValue ? p.FechaVencimiento.Value.ToString("dd/MM/yyyy") : "-")</td>
+                        <td class="@ClaseVencimiento(p.FechaVencimiento)">@(p.FechaVencimiento.HasValue ? p.FechaVencimiento.Value.ToString("dd/MM/yyyy") : "-")</td>
                         <td class="sa-center">
                             <button class="sa-icbtn" title="Editar" @onclick="() => Editar(p)">
                                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"></path></svg>
@@ -172,6 +172,21 @@ else
 }
 
 @code {
+    // Determina el color del texto de vencimiento según qué tan cerca está:
+    // rojo si ya venció, ámbar si vence dentro de los próximos 30 días.
+    private string ClaseVencimiento(DateTime? fecha)
+    {
+        if (!fecha.HasValue) return "";
+
+        if (fecha.Value.Date < DateTime.Today)
+            return "sa-text-danger";
+
+        if (fecha.Value.Date <= DateTime.Today.AddDays(30))
+            return "sa-text-warn";
+
+        return "";
+    }
+
     private List<Producto>? productos;
     private List<CategoriaDto> categorias = new();
     private List<ProveedorDto> proveedores = new();
